@@ -4,7 +4,7 @@ um pequeno bot que detecta atualizações e atividades em um ou mais jogos do ro
 o bot executa detecções a cada 2 minutos, verificando atualizações e atividades em jogos usando diversas APIs do roblox, qualquer mudança ou atividade detectada é enviada por uma webhook do discord (localizada no arquivo `.env`)
 
 o bot também inclui uma interface feita em HTML, podendo ser acessada por um navegador usando `localhost:3000`, ou o endereço IP do seu dispositivo seguido pela porta `3000`, lá você pode ver detalhes mais profundos do bot (tempo de execução, quantidade de detecções executadas, etc.)
-> por essa interface, é possível executar uma detecção independente fazendo um GET request na path `/check`, que retorna as informações atualizadas após a execução
+> por essa interface, é possível executar uma detecção independente simplesmente clicando no `run check` ou fazendo um GET request na path `/check`, que retorna as informações atualizadas após a execução
 ## como usar
 - insira sua webhook na string `webhook` no arquivo `.env`
 - baixe as dependências com `npm i`
@@ -59,4 +59,4 @@ a interface do bot, aqui estão alguns detalhes sobre:
 - next check: tempo até a próxima detecção automática
 - run check: executa uma detecção independente
 
-![image](https://github.com/user-attachments/assets/54610eb2-c315-4d2f-adcd-ad8df45dc157)
+![image](https://github.com/user-attachments/assets/f197c4b3-85dd-4389-a5aa-2ed4f2fbbbed)
