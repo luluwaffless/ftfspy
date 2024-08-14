@@ -10,7 +10,7 @@ o bot também inclui uma interface feita em HTML, podendo ser acessada por um na
 - baixe as dependências com `npm i`
 - inicie com `node .`
 ## como modificar
-> [!IMPORTANT]
+> [!WARNING]
 > recomendado para aqueles que saibam o que estão fazendo e que gostariam de fazer modificações, ou para aqueles que buscam informações mais profundas sobre como o bot funciona
 1. `index.js`:
 
@@ -45,12 +45,18 @@ informações sobre aqueles que possuem acesso ao INDEV e que podem ser detectad
 3. `public/index.html`:
 
 a interface do bot, aqui estão alguns detalhes sobre:
+- home, logs, last updated, testers: arquivos do bot
+ - home: a interface principal do bot
+ - logs: arquivo txt de erros e informações do bot
+ - last updated: arquivo json que indica as datas das ultimas atualizações detectadas
+ - testers: arquivo json que indica os usuários que tem acesso ao INDEV
 - checks: quantidade de execução de detecções
-- DSII `(Developers Seen In INDEV)`: lista de última atividade detectada, inclui IDs de jogadores caso presente
+- TSII `(Testers Seen In INDEV)`: lista de última atividade detectada, inclui IDs de jogadores caso presente
 - updates: quantidade de atualizações detectadas
 - read errors: quantidade erros de leitura, normalmente associados com erros de leitura de informações ou requests mal-feitas
 - fetch errors: quantidade de erros de conexão
 - runtime: tempo em que o bot está no ar
 - next check: tempo até a próxima detecção automática
+- run check: executa uma detecção independente
 
 ![image](https://github.com/user-attachments/assets/54610eb2-c315-4d2f-adcd-ad8df45dc157)

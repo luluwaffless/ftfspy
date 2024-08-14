@@ -41,6 +41,12 @@
             .red {
                 color: rgb(255, 128, 128);
             }
+            .small {
+                font-size: small; 
+                color: rgb(109, 109, 121); 
+                padding: 0; 
+                margin: 0;
+            }
         </style>
     </head>
     <body>
@@ -52,17 +58,18 @@
                 <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
             </div><br>
             <span>🔎 Checks: <span class="blue" id="checks"></span></span><br>
-            <span>👥 DSII: <span class="blue" id="dsii"></span></span><br>
+            <span>👥 TSII: <span class="blue" id="tsii"></span></span><br>
             <span>✅ FTF Updates: <span class="green" id="ftfupd"></span></span><br>
             <span>✅ INDEV Updates: <span class="green" id="indupd"></span></span><br>
             <span>❌ Read errors: <span class="red" id="erd"></span></span><br>
             <span>❌ Fetch errors: <span class="red" id="efd"></span></span><br>
-            <span style="font-size: small; color: rgb(109, 109, 121); padding: 0; margin: 0;">⏱️ Runtime: <span id="runtime"></span></span><br>
-            <span style="font-size: small; color: rgb(109, 109, 121); padding: 0; margin: 0;">⌛ Next check: <span id="nextCheck"></span></span><br><br>
+            <span class="small">⏱️ Runtime: <span id="runtime"></span></span><br>
+            <span class="small">⌛ Next check: <span id="nextCheck"></span></span><br>
+            <a style="font-size: small; color: rgb(109, 109, 121); padding: 3px; margin: 0; text-decoration: none; border-radius: 2.5px; border: 1px solid rgb(109, 109, 121);" href="#" onclick="$.ajax('/check')">🔎 Run check</a><br><br>
         </div>
     </body>
     <script type="text/javascript">
-        const info = {checks: document.getElementById("checks"), dsii: document.getElementById("dsii"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
+        const info = {checks: document.getElementById("checks"), tsii: document.getElementById("tsii"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -91,10 +98,10 @@
         function main() {
             $.ajax("/info", {
                 success: function(data) {
-                    const nextCheck = new Date(data.lastCheck).getTime() + 120000;
+                    const nextCheck = new Date(data.nextCheck).getTime();
                     const runtimeDate = new Date(data.startTime).getTime();
                     info.checks.innerHTML = data.checks;
-                    info.dsii.innerHTML = data.dsii.length > 0 ? data.dsii.join(", ") : "None";
+                    info.tsii.innerHTML = data.tsii.length > 0 ? data.tsii.join(", ") : "None";
                     info.ftfupd.innerHTML = data.ftfupd;
                     info.indupd.innerHTML = data.indupd;
                     info.erd.innerHTML = data.erd;

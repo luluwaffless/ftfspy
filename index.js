@@ -7,7 +7,7 @@ const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
 let testers = JSON.parse(fs.readFileSync("public/testers.json", "utf8"));
-let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, dsii: [], startTime: new Date().toISOString(), lastCheck: ""};
+let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, tsii: [], startTime: new Date().toISOString(), nextCheck: ""};
 async function send(content) {
     return axios.post(process.env.webhook, {"content": content}, {"headers": {'Content-Type': 'application/json'}});
 };
@@ -81,7 +81,7 @@ async function check(repeat) {
                     sessionInfo.indupd += 1;
                     send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# tempo que levou para detectar: " + timeSince(new Date(response.data.data[0].updated).getTime()));
                 };
-                if (response.data.data[0].playing > 2 || sessionInfo.dsii.length > 0) {
+                if (response.data.data[0].playing > 2 || sessionInfo.tsii.length > 0) {
                     await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", {"headers": {"accept": "application/json"}})
                         .then(async instances => {
                             if (instances.data["data"] && instances.data.data[0] && instances.data.data[0]["playerTokens"]) {
@@ -100,16 +100,16 @@ async function check(repeat) {
                                                 testers.forEach(tester => {
                                                     list.push(`- [${tester.name}](<https://www.roblox.com/users/${tester.id}/profile>)`);
                                                     testerIds.push(tester.id);
-                                                    if (!sessionInfo.dsii.includes(tester.id)) {
+                                                    if (!sessionInfo.tsii.includes(tester.id)) {
                                                         diff.push(`+ ${tester.name} (${tester.id})`)
-                                                        sessionInfo.dsii.push(tester.id);
+                                                        sessionInfo.tsii.push(tester.id);
                                                     };
                                                 });
-                                                for (let i = 0; i < sessionInfo.dsii.length; i++) {
-                                                    if (!testerIds.includes(sessionInfo.dsii[i])) {
-                                                        const tester = getTester(sessionInfo.dsii[i]);
+                                                for (let i = 0; i < sessionInfo.tsii.length; i++) {
+                                                    if (!testerIds.includes(sessionInfo.tsii[i])) {
+                                                        const tester = getTester(sessionInfo.tsii[i]);
                                                         diff.push(`- ${tester.name} (${tester.id})`);
-                                                        sessionInfo.dsii.splice(i, 1);
+                                                        sessionInfo.tsii.splice(i, 1);
                                                     };
                                                 };
                                                 if (diff.length > 0) {
@@ -164,9 +164,13 @@ async function check(repeat) {
             sessionInfo.efd += 1;
             log("❌ Error fetching data: " + error)
         });
-    sessionInfo.lastCheck = new Date().toISOString();
     sessionInfo.checks += 1;
-    if (repeat === true) setTimeout(function() { check(true); }, 120000);
+    if (repeat === true) { 
+        sessionInfo.nextCheck = new Date(new Date().getTime() + 120000).toISOString();
+        setTimeout(function() { 
+            check(true); 
+        }, 120000); 
+    };
 };
 for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
     process.on(evt, async function() {
