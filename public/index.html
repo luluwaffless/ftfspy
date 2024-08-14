@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.65">
+        <title>ftfspy by luluwaffless</title>
+        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+        <style>
+            body {
+                font-size: large;
+                text-align: center;
+                background-color: rgb(25, 25, 75);
+                color: rgb(237, 237, 249);
+                font-family: 'Courier New', Courier, monospace;
+            }
+            .links {
+                padding: 10px;
+            }
+            .current {
+                color: #ffffff;
+            }
+            a {
+                color: #808080;
+            }
+            .container {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                position: absolute;
+                border-radius: 10px;
+                padding: 10px;
+                box-shadow: 0px 0px 10px 5px rgba(10, 10, 20, 0.2);
+                background-color: rgb(37, 37, 100);
+            }
+            .blue {
+                color: rgb(128, 128, 255);
+            }
+            .green {
+                color: rgb(128, 255, 128);
+            }
+            .red {
+                color: rgb(255, 128, 128);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="links">
+                <a href="#" class="current">home</a> <a href="/logs.txt">logs</a> <a href="/lastupdated.json">last updated</a> <a href="/testers.json">testers</a><br><br>
+            </div>
+            <div class="title">
+                <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
+            </div><br>
+            <span>🔎 Checks: <span class="blue" id="checks"></span></span><br>
+            <span>👥 DSII: <span class="blue" id="dsii"></span></span><br>
+            <span>✅ FTF Updates: <span class="green" id="ftfupd"></span></span><br>
+            <span>✅ INDEV Updates: <span class="green" id="indupd"></span></span><br>
+            <span>❌ Read errors: <span class="red" id="erd"></span></span><br>
+            <span>❌ Fetch errors: <span class="red" id="efd"></span></span><br>
+            <span style="font-size: small; color: rgb(109, 109, 121); padding: 0; margin: 0;">⏱️ Runtime: <span id="runtime"></span></span><br>
+            <span style="font-size: small; color: rgb(109, 109, 121); padding: 0; margin: 0;">⌛ Next check: <span id="nextCheck"></span></span><br><br>
+        </div>
+    </body>
+    <script type="text/javascript">
+        const info = {checks: document.getElementById("checks"), dsii: document.getElementById("dsii"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
+        function timeSince(timestamp) {
+            const now = new Date().getTime();
+            const diff = now - timestamp;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            let parts = [];
+            if (hours) parts.push(hours);
+            if (minutes || hours) parts.push(minutes.toString().padStart(hours ? 2 : 1, '0'));
+            parts.push(seconds.toString().padStart(minutes || hours ? 2 : 1, '0'));
+            return parts.join(':');
+        };
+        function timeUntil(timestamp) {
+            const now = new Date().getTime();
+            const diff = timestamp - now;
+            if (diff < 1000) return 'checking...'; 
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            let parts = [];
+            if (hours) parts.push(hours);
+            if (minutes || hours) parts.push(minutes.toString().padStart(hours ? 2 : 1, '0'));
+            parts.push(seconds.toString().padStart(minutes || hours ? 2 : 1, '0'));
+            return parts.join(':');
+        };
+        function main() {
+            $.ajax("/info", {
+                success: function(data) {
+                    const nextCheck = new Date(data.lastCheck).getTime() + 120000;
+                    const runtimeDate = new Date(data.startTime).getTime();
+                    info.checks.innerHTML = data.checks;
+                    info.dsii.innerHTML = data.dsii.length > 0 ? data.dsii.join(", ") : "None";
+                    info.ftfupd.innerHTML = data.ftfupd;
+                    info.indupd.innerHTML = data.indupd;
+                    info.erd.innerHTML = data.erd;
+                    info.efd.innerHTML = data.efd;
+                    info.runtime.innerHTML = timeSince(runtimeDate);
+                    info.nextCheck.innerHTML = timeUntil(nextCheck);
+                }
+            });
+            setTimeout(main, 1000);
+        };
+        main();
+    </script>
+</html>
