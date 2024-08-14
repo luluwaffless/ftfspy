@@ -1,0 +1,56 @@
+# ftfspy
+um pequeno bot que detecta atualizações e atividades em um ou mais jogos do roblox (configurado para o [Flee The Facility](https://www.roblox.com/games/893973440/Flee-the-Facility) e sua versão de testes, [INDEV](https://www.roblox.com/games/455327877/FTF-In-Dev)) e envia detecções por uma webhook do discord
+## como funciona
+o bot executa detecções a cada 2 minutos, verificando atualizações e atividades em jogos usando diversas APIs do roblox, qualquer mudança ou atividade detectada é enviada por uma webhook do discord (localizada no arquivo `.env`)
+
+o bot também inclui uma interface feita em HTML, podendo ser acessada por um navegador usando `localhost:3000`, ou o endereço IP do seu dispositivo seguido pela porta `3000`, lá você pode ver detalhes mais profundos do bot (tempo de execução, quantidade de detecções executadas, etc.)
+> por essa interface, é possível executar uma detecção independente fazendo um GET request na path `/check`, que retorna as informações atualizadas após a execução
+## como usar
+- insira sua webhook na string `webhook` no arquivo `.env`
+- baixe as dependências com `npm i`
+- inicie com `node .`
+## como modificar
+> [!IMPORTANT]
+> recomendado para aqueles que saibam o que estão fazendo e que gostariam de fazer modificações, ou para aqueles que buscam informações mais profundas sobre como o bot funciona
+1. `index.js`:
+
+o principal script responsável pelo funcionamento do bot, executa as detecções e retorna informações, ele segue essa estrutura:
+```
+função principal/main
+├── primeiro GET para https://games.roblox.com/v1/games, verifica o primeiro jogo, atualmente configurado para o INDEV
+|   ├── verifica atualizações
+|   |   └── caso detectado, atualiza e envia informações a webhook 
+|   └── verifica atividade
+|       └── caso detectado atividade elevada ou já existente, verifica por mudanças
+|           └── caso detectado mudanças, atualiza e envia informações a webhook 
+└── segundo GET para https://games.roblox.com/v1/games, verifica o segundo jogo, atualmente configurado para o Flee The Facility
+|   └── verifica atualizações
+|       └── caso detectado, atualiza e envia informações a webhook
+└── define 2 minutos para repetir detecção (caso não seja execução independente)
+```
+2. `public/testers.json`:
+
+informações sobre aqueles que possuem acesso ao INDEV e que podem ser detectados em atividades, segue esse formato:
+```json
+{
+    "data": [
+        {
+            "id": "ID DO USUÁRIO",
+            "img": "URL DE IMAGEM DO USUÁRIO",
+            "name": "NOME DO USUÁRIO"
+        }
+    ]
+}
+```
+3. `public/index.html`:
+
+a interface do bot, aqui estão alguns detalhes sobre:
+- checks: quantidade de execução de detecções
+- DSII `(Developers Seen In INDEV)`: lista de última atividade detectada, inclui IDs de jogadores caso presente
+- updates: quantidade de atualizações detectadas
+- read errors: quantidade erros de leitura, normalmente associados com erros de leitura de informações ou requests mal-feitas
+- fetch errors: quantidade de erros de conexão
+- runtime: tempo em que o bot está no ar
+- next check: tempo até a próxima detecção automática
+
+![image](https://github.com/user-attachments/assets/54610eb2-c315-4d2f-adcd-ad8df45dc157)
