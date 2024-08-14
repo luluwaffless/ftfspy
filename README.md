@@ -46,10 +46,10 @@ informações sobre aqueles que possuem acesso ao INDEV e que podem ser detectad
 
 a interface do bot, aqui estão alguns detalhes sobre:
 - home, logs, last updated, testers: arquivos do bot
- - home: a interface principal do bot
- - logs: arquivo txt de erros e informações do bot
- - last updated: arquivo json que indica as datas das ultimas atualizações detectadas
- - testers: arquivo json que indica os usuários que tem acesso ao INDEV
+  - home: a interface principal do bot
+  - logs: arquivo txt de erros e informações do bot
+  - last updated: arquivo json que indica as datas das ultimas atualizações detectadas
+  - testers: arquivo json que indica os usuários que tem acesso ao INDEV
 - checks: quantidade de execução de detecções
 - TSII `(Testers Seen In INDEV)`: lista de última atividade detectada, inclui IDs de jogadores caso presente
 - updates: quantidade de atualizações detectadas
