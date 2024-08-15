@@ -74,7 +74,7 @@ async function check(repeat) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", {"headers": {"accept": "application/json"}})
         .then(async response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"] && !(isNaN(response.data.data[0]["playing"]))) {
-                if (!(response.data.data[0].updated === lastUpdated.indev) && (new Date(response.data.data[0].updated) > new Date(lastUpdated.indev))) {
+                if (!(response.data.data[0].updated === lastUpdated.indev) && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.indev).getTime() + 1000)) {
                     log(`✅ INDEV updated. From ${lastUpdated.indev} to ${response.data.data[0].updated}.`);
                     lastUpdated.indev = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
@@ -148,7 +148,7 @@ async function check(repeat) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=372226183", {"headers": {"accept": "application/json"}})
         .then(response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
-                if (!(response.data.data[0].updated === lastUpdated.ftf) && (new Date(response.data.data[0].updated) > new Date(lastUpdated.ftf))) {
+                if (!(response.data.data[0].updated === lastUpdated.ftf) && (new Date(response.data.data[0].updated).getTime > new Date(lastUpdated.ftf).getTime() + 1000)) {
                     log(`✅ FTF updated. From ${lastUpdated.ftf} to ${response.data.data[0].updated}.`);
                     lastUpdated.ftf = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
