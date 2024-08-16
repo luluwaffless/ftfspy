@@ -63,13 +63,14 @@
             <span>✅ INDEV Updates: <span class="green" id="indupd"></span></span><br>
             <span>❌ Read errors: <span class="red" id="erd"></span></span><br>
             <span>❌ Fetch errors: <span class="red" id="efd"></span></span><br>
+            <span>❌ Message errors: <span class="red" id="esm"></span></span><br>
             <span class="small">⏱️ Runtime: <span id="runtime"></span></span><br>
             <span class="small">⌛ Next check: <span id="nextCheck"></span></span><br>
             <a style="font-size: small; color: rgb(109, 109, 121); padding: 3px; margin: 0; text-decoration: none; border-radius: 2.5px; border: 1px solid rgb(109, 109, 121);" href="#" onclick="$.ajax('/check')">🔎 Run check</a><br><br>
         </div>
     </body>
     <script type="text/javascript">
-        const info = {checks: document.getElementById("checks"), tsii: document.getElementById("tsii"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
+        const info = {checks: document.getElementById("checks"), tsii: document.getElementById("tsii"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -106,6 +107,7 @@
                     info.indupd.innerHTML = data.indupd;
                     info.erd.innerHTML = data.erd;
                     info.efd.innerHTML = data.efd;
+                    info.esm.innerHTML = data.esm;
                     info.runtime.innerHTML = timeSince(runtimeDate);
                     info.nextCheck.innerHTML = timeUntil(nextCheck);
                 }

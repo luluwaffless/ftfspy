@@ -7,12 +7,19 @@ const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
 let testers = JSON.parse(fs.readFileSync("public/testers.json", "utf8"));
-let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, tsii: [], startTime: new Date().toISOString(), nextCheck: ""};
-async function send(content) {
-    return axios.post(process.env.webhook, {"content": content}, {"headers": {'Content-Type': 'application/json'}});
-};
+let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], startTime: new Date().toISOString(), nextCheck: ""};
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
+};
+async function send(content) {
+    return await axios.post(process.env.webhook, {"content": content}, {"headers": {'Content-Type': 'application/json'}})
+        .then((response) => {
+            log(`✅ Sent message successfully. Response: ${response.data}`);
+        })
+        .catch((error) => {
+            sessionInfo.esm += 1;
+            log(`❌ Error sending message: ${error}`);
+        });
 };
 function timeSince(timestamp) {
     const now = new Date().getTime();
