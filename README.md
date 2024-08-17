@@ -55,8 +55,10 @@ a interface do bot, aqui estão alguns detalhes sobre:
 - updates: quantidade de atualizações detectadas
 - read errors: quantidade erros de leitura, normalmente associados com erros de leitura de informações ou requests mal-feitas
 - fetch errors: quantidade de erros de conexão
+- message errors: quantidade de erros ao tentar enviar uma mensagem a webhook, normalmente associados com problemas de internet ou muitos requests em pouco tempo
 - runtime: tempo em que o bot está no ar
 - next check: tempo até a próxima detecção automática
 - run check: executa uma detecção independente
 
-![image](https://github.com/user-attachments/assets/f197c4b3-85dd-4389-a5aa-2ed4f2fbbbed)
+![image](https://github.com/user-attachments/assets/b5c32154-9b81-4a88-96a8-2c65a017921a)
+
