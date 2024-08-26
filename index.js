@@ -13,9 +13,6 @@ async function log(data) {
 };
 async function send(content) {
     return await axios.post(process.env.webhook, {"content": content}, {"headers": {'Content-Type': 'application/json'}})
-        .then((response) => {
-            log(`✅ Sent message successfully. Response: ${response.data}`);
-        })
         .catch((error) => {
             sessionInfo.esm += 1;
             log(`❌ Error sending message: ${error}`);
