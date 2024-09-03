@@ -86,6 +86,7 @@ async function check(repeat) {
                     send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# tempo que levou para detectar: " + timeSince(new Date(response.data.data[0].updated).getTime()));
                 };
                 if (response.data.data[0].playing > 2 || sessionInfo.tsii.length > 0) {
+                    log("🔎 Checking players...")
                     await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", {"headers": {"accept": "application/json"}})
                         .then(async instances => {
                             if (instances.data["data"] && instances.data.data[0] && instances.data.data[0]["playerTokens"]) {
