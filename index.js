@@ -28,7 +28,7 @@ function timeSince(timestamp) {
     if (hours && hours > 0) parts.push(`${hours} hora${hours != 1 ? "s" : ""}`);
     if (minutes && minutes > 0) parts.push(`${minutes} minuto${minutes != 1 ? "s" : ""}`);
     if (seconds && seconds > 0) parts.push(`${seconds} segundo${seconds != 1 ? "s" : ""}`);
-    return parts.join(", ");
+    return parts.length > 0 ? `há ${parts.join(", ")}` : "agora";
 };
 function getTester(id) {
     for (let i = 0; i < testers.data.length; i++) {
@@ -83,7 +83,7 @@ async function check(repeat) {
                     lastUpdated.indev = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
                     sessionInfo.indupd += 1;
-                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# tempo que levou para detectar: " + timeSince(new Date(response.data.data[0].updated).getTime()));
+                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# " + timeSince(new Date(response.data.data[0].updated).getTime()));
                 };
                 if (response.data.data[0].playing > 2 || sessionInfo.tsii.length > 0) {
                     log("🔎 Checking players...")
@@ -158,7 +158,7 @@ async function check(repeat) {
                     lastUpdated.ftf = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
                     sessionInfo.ftfupd += 1;
-                    send("# `🚨` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n-# tempo que levou para detectar: " + timeSince(new Date(response.data.data[0].updated).getTime()));
+                    send("# `🚨` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n-# " + timeSince(new Date(response.data.data[0].updated).getTime()));
                 };
             } else {
                 sessionInfo.erd += 1;
