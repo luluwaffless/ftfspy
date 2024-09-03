@@ -8,7 +8,7 @@ o bot também inclui uma interface feita em HTML, podendo ser acessada por um na
 ## como usar
 - insira sua webhook na string `webhook` no arquivo `.env`
 - baixe as dependências com `npm i`
-- inicie com `node .`
+- inicie com `node .` ou `npm start`
 ## como modificar
 > [!WARNING]
 > recomendado para aqueles que saibam o que estão fazendo e que gostariam de fazer modificações, ou para aqueles que buscam informações mais profundas sobre como o bot funciona
