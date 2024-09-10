@@ -6,7 +6,7 @@ o bot executa detecções a cada 2 minutos, verificando atualizações e ativida
 o bot também inclui uma interface feita em HTML, podendo ser acessada por um navegador usando `localhost:3000`, ou o endereço IP do seu dispositivo seguido pela porta `3000`, lá você pode ver detalhes mais profundos do bot (tempo de execução, quantidade de detecções executadas, etc.)
 > por essa interface, é possível executar uma detecção independente simplesmente clicando no `run check` ou fazendo um GET request na path `/check`, que retorna as informações atualizadas após a execução
 ## como usar
-- insira sua webhook na string `webhook` no arquivo `.env`
+- insira sua webhook e token nas strings `webhook` e `token` no arquivo `.env`
 - baixe as dependências com `npm i`
 - inicie com `node .` ou `npm start`
 ## como modificar
