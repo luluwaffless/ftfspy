@@ -2,6 +2,7 @@ import fs from "node:fs";
 import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
+import { Client, GatewayIntentBits } from "discord.js";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
@@ -177,16 +178,23 @@ async function check(repeat) {
         }, 120000); 
     };
 };
-for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
-    process.on(evt, async function() {
-        await log("🔴 Offline");
-        await send("`🔴` boa noite, tô off");
-        process.exit();
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+client.on('ready', async function() {
+    const channel = await client.channels.fetch('1264712451572891678');
+    await channel.setName("🟢ftfspy")
+    app.listen(3000, function() {
+        console.log("✅ http://localhost:3000");
+        log("🟢 Online");
     });
-};
-app.listen(3000, function() {
-    console.log("✅ http://localhost:3000");
-    log("🟢 Online");
-    send("`🟢` bom dia, tô on");
+    check(true);
+    for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
+        process.on(evt, async function() {
+            process.stdin.resume();
+            await channel.setName("🔴ftfspy");
+            await log("🔴 Offline");
+            process.exit();
+        });
+    };
 });
-check(true);
+client.login(process.env.token);
