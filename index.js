@@ -79,7 +79,7 @@ async function check(repeat) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", {"headers": {"accept": "application/json"}})
         .then(async response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"] && !(isNaN(response.data.data[0]["playing"]))) {
-                if (!(response.data.data[0].updated === lastUpdated.indev) && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.indev).getTime() + 1000)) {
+                if (response.data.data[0].updated != lastUpdated.indev && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.indev).getTime() + 1000)) {
                     log(`✅ INDEV updated. From ${lastUpdated.indev} to ${response.data.data[0].updated}.`);
                     lastUpdated.indev = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
@@ -154,7 +154,7 @@ async function check(repeat) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=372226183", {"headers": {"accept": "application/json"}})
         .then(response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
-                if (!(response.data.data[0].updated === lastUpdated.ftf) && (new Date(response.data.data[0].updated).getTime > new Date(lastUpdated.ftf).getTime() + 1000)) {
+                if (response.data.data[0].updated != lastUpdated.ftf && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.ftf).getTime() + 1000)) {
                     log(`✅ FTF updated. From ${lastUpdated.ftf} to ${response.data.data[0].updated}.`);
                     lastUpdated.ftf = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
@@ -181,8 +181,10 @@ async function check(repeat) {
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.on('ready', async function() {
-    const channel = await client.channels.fetch('1264712451572891678');
-    await channel.setName("🟢ftfspy")
+    const tc = await client.channels.fetch('1264712451572891678');
+    const vc = await client.channels.fetch('1283187128469295176');
+    await tc.setName("🟢ftfspy");
+    await vc.setName("🟢 bot tá on");
     app.listen(3000, function() {
         console.log("✅ http://localhost:3000");
         log("🟢 Online");
@@ -191,7 +193,8 @@ client.on('ready', async function() {
     for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
         process.on(evt, async function() {
             process.stdin.resume();
-            await channel.setName("🔴ftfspy");
+            await tc.setName("🔴ftfspy");
+            await vc.setName("🔴 bot tá off");
             await log("🔴 Offline");
             process.exit();
         });
