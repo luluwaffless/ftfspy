@@ -19,13 +19,15 @@ o principal script responsável pelo funcionamento do bot, executa as detecçõe
 função principal/main
 ├── primeiro GET para https://games.roblox.com/v1/games, verifica o primeiro jogo, atualmente configurado para o INDEV
 |   ├── verifica atualizações
-|   |   └── caso detectado, atualiza e envia informações a webhook 
+|   |   └── caso detectado, atualiza e envia informações à webhook 
 |   └── verifica atividade
 |       └── caso detectado atividade elevada ou já existente, verifica por mudanças
-|           └── caso detectado mudanças, atualiza e envia informações a webhook 
+|           └── caso detectado mudanças, atualiza e envia informações à webhook 
 └── segundo GET para https://games.roblox.com/v1/games, verifica o segundo jogo, atualmente configurado para o Flee The Facility
 |   └── verifica atualizações
-|       └── caso detectado, atualiza e envia informações a webhook
+|       └── caso detectado, atualiza e envia informações à webhook
+└── POST para https://presence.roblox.com/v1/presence/users, verifica o status do desenvolvedor do jogo, atualmente configurado para o MrWindy
+|   └── caso alguma mudança seja detectada, atualiza e envia informações à webhook
 └── define 2 minutos para repetir detecção (caso não seja execução independente)
 ```
 2. `public/testers.json`:
@@ -52,6 +54,7 @@ a interface do bot, aqui estão alguns detalhes sobre:
   - testers: arquivo json que indica os usuários que tem acesso ao INDEV
 - checks: quantidade de execução de detecções
 - TSII `(Testers Seen In INDEV)`: lista de última atividade detectada, inclui IDs de jogadores caso presente
+- last status: último status do desenvolvedor do jogo
 - updates: quantidade de atualizações detectadas
 - read errors: quantidade erros de leitura, normalmente associados com erros de leitura de informações ou requests mal-feitas
 - fetch errors: quantidade de erros de conexão

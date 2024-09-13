@@ -60,6 +60,7 @@
             </div><br>
             <span>🔎 Checks: <span class="blue" id="checks"></span></span><br>
             <span>👥 TSII: <span class="blue" id="tsii"></span></span><br>
+            <span>🔵 Last Status: <span class="blue" id="lastStatus"></span></span><br>
             <span>✅ <a class="current" href="https://www.roblox.com/games/893973440/Flee-the-Facility">FTF</a> Updates: <span class="green" id="ftfupd"></span></span><br>
             <span>✅ <a class="current" href="https://www.roblox.com/games/455327877/FTF-In-Dev">INDEV</a> Updates: <span class="green" id="indupd"></span></span><br>
             <span>❌ Read errors: <span class="red" id="erd"></span></span><br>
@@ -71,7 +72,7 @@
         </div>
     </body>
     <script type="text/javascript">
-        const info = {checks: document.getElementById("checks"), tsii: document.getElementById("tsii"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
+        const info = {checks: document.getElementById("checks"), tsii: document.getElementById("tsii"), lastStatus: document.getElementById("lastStatus"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -98,12 +99,14 @@
             return parts.join(':');
         };
         function main() {
+            const statusText = ['Offline', 'Online', 'Playing', 'In Studio', 'Invisible'];
             $.ajax("/info", {
                 success: function(data) {
                     const nextCheck = new Date(data.nextCheck).getTime();
                     const runtimeDate = new Date(data.startTime).getTime();
                     info.checks.innerHTML = data.checks;
                     info.tsii.innerHTML = data.tsii.length > 0 ? data.tsii.join(", ") : "None";
+                    info.lastStatus.innerHTML = statusText[data.lastStatus];
                     info.ftfupd.innerHTML = data.ftfupd;
                     info.indupd.innerHTML = data.indupd;
                     info.erd.innerHTML = data.erd;

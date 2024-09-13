@@ -8,7 +8,7 @@ const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
 let testers = JSON.parse(fs.readFileSync("public/testers.json", "utf8"));
-let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], startTime: new Date().toISOString(), nextCheck: ""};
+let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatus: 0, startTime: new Date().toISOString(), nextCheck: ""};
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -75,6 +75,9 @@ app.get("/check", async function(_, res) {
     await check(false);
     res.json(sessionInfo);
 }); 
+
+const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
+const statusText = ['offline', 'online', 'em jogo', 'no studio', 'invisível'];
 async function check(repeat) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", {"headers": {"accept": "application/json"}})
         .then(async response => {
@@ -170,6 +173,27 @@ async function check(repeat) {
             sessionInfo.efd += 1;
             log("❌ Error fetching data: " + error)
         });
+    axios.post("https://presence.roblox.com/v1/presence/users", {"userIds": [7140919]}, { headers: {
+        "accept": "application/json",
+        "Content-Type": "application/json"
+    } })
+        .then(function(response) {
+            if (response.data["userPresences"] && response.data.userPresences[0] && !isNaN(response.data.userPresences[0]["userPresenceType"])) {
+                if (sessionInfo.lastStatus != response.data.userPresences[0].userPresenceType) {
+                    log(`🔎 MrWindy's status changed from ${sessionInfo.lastStatus} to ${response.data.userPresences[0].userPresenceType}`);
+                    sessionInfo.lastStatus = response.data.userPresences[0].userPresenceType;
+                    send(`\`${statusEmoji[sessionInfo.lastStatus]}\` o [MrWindy](https://www.roblox.com/users/7140919/profile) está ${statusText[sessionInfo.lastStatus]}\n-# ||<@&1284206679822696559>||`);
+                };
+            } else {
+                sessionInfo.erd += 1;
+                log("❌ Error reading data: " + JSON.stringify(response.data));
+            };
+        })
+        .catch(function(error) {
+            sessionInfo.efd += 1;
+            log(`❌ Error fetching data: ${error}`);
+        });
+
     sessionInfo.checks += 1;
     if (repeat === true) { 
         sessionInfo.nextCheck = new Date(new Date().getTime() + 120000).toISOString();
