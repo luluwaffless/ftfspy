@@ -77,7 +77,7 @@ app.get("/check", async function(_, res) {
 }); 
 
 const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
-const statusText = ['offline', 'online', 'em jogo', 'no studio', 'invisível'];
+const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
 async function check(repeat) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", {"headers": {"accept": "application/json"}})
         .then(async response => {
