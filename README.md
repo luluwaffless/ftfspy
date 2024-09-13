@@ -63,5 +63,7 @@ a interface do bot, aqui estão alguns detalhes sobre:
 - next check: tempo até a próxima detecção automática
 - run check: executa uma detecção independente
 
-![image](https://github.com/user-attachments/assets/b5c32154-9b81-4a88-96a8-2c65a017921a)
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/a702ab31-2d03-4b0e-8787-75d8d38c368f">
+</p>
 
