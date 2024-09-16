@@ -16,7 +16,7 @@ async function send(content) {
     return await axios.post(process.env.webhook, {"content": content}, {"headers": {'Content-Type': 'application/json'}})
         .catch((error) => {
             sessionInfo.esm += 1;
-            log(`❌ Error sending message: ${error}`);
+            log(`❌ Line 19: Error sending message: ${error}`);
         });
 };
 function timeSince(timestamp) {
@@ -56,12 +56,12 @@ async function getTesters(responseBatch) {
                             };
                         } else {
                             sessionInfo.erd += 1;
-                            log("❌: Error reading data: " + JSON.stringify(testerBatch.data));
+                            log("❌ Line 59: Line  Error reading data: " + JSON.stringify(testerBatch.data));
                         };
                     })
                     .catch(error => {
                         sessionInfo.efd += 1;
-                        log("❌ Error fetching data: " + error);
+                        log("❌ Line 64: Error fetching data: " + error);
                     });
             };
         };
@@ -127,31 +127,43 @@ async function check(repeat) {
                                             };
                                         } else {
                                             sessionInfo.erd += 1;
-                                            log("❌: Error reading data: " + JSON.stringify(batches.data));
+                                            log("❌ Line 130: Error reading data: " + JSON.stringify(batches.data));
                                         };
                                     })
                                     .catch(error => {
                                         sessionInfo.efd += 1;
-                                        log("❌ Error fetching data: " + error);
+                                        log("❌ Line 135: Error fetching data: " + error);
                                     });
+                            } else if (sessionInfo.tsii.length > 0 && instances.data["data"] && !instances.data.data[0]) {
+                                let diff = [];
+                                for (let i = 0; i < sessionInfo.tsii.length; i++) {
+                                    if (!testerIds.includes(sessionInfo.tsii[i])) {
+                                        const tester = getTester(sessionInfo.tsii[i]);
+                                        diff.push(`- ${tester.name} (${tester.id})`);
+                                        sessionInfo.tsii.splice(i, 1);
+                                    };
+                                };
+                                if (diff.length > 0) {
+                                    send(`\`👥\` desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>):\`\`\`diff\n${diff.join('\n')}\n\`\`\`\n-# ||<@&1273043382519861430>||`);
+                                };
                             } else {
                                 sessionInfo.erd += 1;
-                                log("❌: Error reading data: " + JSON.stringify(instances.data));
+                                log("❌ Line 151: Error reading data: " + JSON.stringify(instances.data));
                             };
                         })
                         .catch(error => {
                             sessionInfo.efd += 1;
-                            log("❌ Error fetching data: " + error);
+                            log("❌ Line 156: Error fetching data: " + error);
                         });
                 };
             } else {
                 sessionInfo.erd += 1;
-                log("❌: Error reading data: " + JSON.stringify(response.data));
+                log("❌ Line 161: Error reading data: " + JSON.stringify(response.data));
             };
         })
         .catch(error => {
             sessionInfo.efd += 1;
-            log("❌ Error fetching data: " + error);
+            log("❌ Line 166: Error fetching data: " + error);
         });
         
     await axios.get("https://games.roblox.com/v1/games?universeIds=372226183", {"headers": {"accept": "application/json"}})
@@ -162,16 +174,29 @@ async function check(repeat) {
                     lastUpdated.ftf = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
                     sessionInfo.ftfupd += 1;
-                    send("# `🚨` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n-# " + timeSince(new Date(response.data.data[0].updated).getTime()));
+                    axios.get("https://thumbnails.roblox.com/v1/games/icons?universeIds=372226183&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false", {"headers": {"accept": "application/json"}})
+                        .then(image => {
+                            if (image.data["data"] && image.data.data[0] && image.data.data[0]["imageUrl"]) {
+                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# ${timeSince(new Date(response.data.data[0].updated).getTime())}`);
+                            } else {
+                                sessionInfo.erd += 1;
+                                log("❌ Line 183: Error reading data: " + JSON.stringify(image.data));
+                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n-# ${timeSince(new Date(response.data.data[0].updated).getTime())}`);
+                            }
+                        })
+                        .catch(error => {
+                            sessionInfo.efd += 1;
+                            log("❌ Line 189: Error fetching data: " + error)
+                        });
                 };
             } else {
                 sessionInfo.erd += 1;
-                log("❌: Error reading data: " + JSON.stringify(response.data));
+                log("❌ Line 194: Error reading data: " + JSON.stringify(response.data));
             };
         })
         .catch(error => {
             sessionInfo.efd += 1;
-            log("❌ Error fetching data: " + error)
+            log("❌ Line 199: Error fetching data: " + error)
         });
     axios.post("https://presence.roblox.com/v1/presence/users", {"userIds": [7140919]}, { headers: {
         "accept": "application/json",
@@ -186,12 +211,12 @@ async function check(repeat) {
                 };
             } else {
                 sessionInfo.erd += 1;
-                log("❌ Error reading data: " + JSON.stringify(response.data));
+                log("❌ Line 214: Error reading data: " + JSON.stringify(response.data));
             };
         })
         .catch(function(error) {
             sessionInfo.efd += 1;
-            log(`❌ Error fetching data: ${error}`);
+            log(`❌ Line 219: Error fetching data: ${error}`);
         });
 
     sessionInfo.checks += 1;
@@ -209,8 +234,8 @@ client.on('ready', async function() {
     const vc = await client.channels.fetch('1283187128469295176');
     await tc.setName("🟢ftfspy");
     await vc.setName("🟢 bot tá on");
-    app.listen(3000, function() {
-        console.log("✅ http://localhost:3000");
+    app.listen(80, function() {
+        console.log("✅ http://localhost");
         log("🟢 Online");
     });
     check(true);
