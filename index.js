@@ -234,8 +234,8 @@ client.on('ready', async function() {
     const vc = await client.channels.fetch('1283187128469295176');
     await tc.setName("🟢ftfspy");
     await vc.setName("🟢 bot tá on");
-    app.listen(80, function() {
-        console.log("✅ http://localhost");
+    app.listen(process.env.port, function() {
+        console.log("✅ http://localhost:" + process.env.port);
         log("🟢 Online");
     });
     check(true);
