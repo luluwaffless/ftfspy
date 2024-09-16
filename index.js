@@ -232,8 +232,8 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.on('ready', async function() {
     const tc = await client.channels.fetch('1264712451572891678');
     const vc = await client.channels.fetch('1283187128469295176');
-    await tc.setName("🟢ftfspy");
-    await vc.setName("🟢 bot tá on");
+    await tc.setName("🟢︱ftfspy");
+    await vc.setName("bot: online 🟢");
     app.listen(process.env.port, function() {
         console.log("✅ http://localhost:" + process.env.port);
         log("🟢 Online");
@@ -242,8 +242,8 @@ client.on('ready', async function() {
     for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
         process.on(evt, async function() {
             process.stdin.resume();
-            await tc.setName("🔴ftfspy");
-            await vc.setName("🔴 bot tá off");
+            await tc.setName("🔴︱ftfspy");
+            await vc.setName("bot: offline 🔴");
             await log("🔴 Offline");
             process.exit();
         });
