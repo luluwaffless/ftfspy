@@ -2,13 +2,14 @@ import fs from "node:fs";
 import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType } from "discord.js";
+import { start } from "node:repl";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
 let testers = JSON.parse(fs.readFileSync("public/testers.json", "utf8"));
-let sessionInfo = {checks: 0, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatus: 0, startTime: new Date().toISOString(), nextCheck: ""};
+let sessionInfo = {checks: {testers: 0, updates: 0, status: 0}, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatus: 0, startTime: new Date().toISOString(), nextChecks: {testers: "", updates: "", status: ""}};
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -71,24 +72,23 @@ async function getTesters(responseBatch) {
 app.get("/info", (_, res) => {
     res.json(sessionInfo);
 });
-app.get("/check", async function(_, res) {
-    await check(false);
+app.get("/check", async function(req, res) {
+    if (req.query.check == "testers") { 
+        await checkTesters();
+    } else if (req.query.check == "updates") {
+        await checkUpdates();
+    } else if (req.query.check == "status") {
+        await checkStatus();
+    };
     res.json(sessionInfo);
 }); 
 
 const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
 const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
-async function check(repeat) {
+async function checkTesters() {
     await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", {"headers": {"accept": "application/json"}})
         .then(async response => {
-            if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"] && !(isNaN(response.data.data[0]["playing"]))) {
-                if (response.data.data[0].updated != lastUpdated.indev && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.indev).getTime() + 1000)) {
-                    log(`✅ INDEV updated. From ${lastUpdated.indev} to ${response.data.data[0].updated}.`);
-                    lastUpdated.indev = response.data.data[0].updated;
-                    fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
-                    sessionInfo.indupd += 1;
-                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# " + timeSince(new Date(response.data.data[0].updated).getTime()));
-                };
+            if (response.data["data"] && !(isNaN(response.data.data[0]["playing"]))) {
                 if (response.data.data[0].playing > 2 || sessionInfo.tsii.length > 0) {
                     log("🔎 Checking players...")
                     await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", {"headers": {"accept": "application/json"}})
@@ -165,7 +165,10 @@ async function check(repeat) {
             sessionInfo.efd += 1;
             log("❌ Line 166: Error fetching data: " + error);
         });
-        
+    sessionInfo.checks.testers += 1;
+    sessionInfo.nextChecks.testers = new Date(new Date().getTime() + 120000).toISOString();
+};
+async function checkUpdates() {
     await axios.get("https://games.roblox.com/v1/games?universeIds=372226183", {"headers": {"accept": "application/json"}})
         .then(response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
@@ -198,7 +201,30 @@ async function check(repeat) {
             sessionInfo.efd += 1;
             log("❌ Line 199: Error fetching data: " + error)
         });
-    axios.post("https://presence.roblox.com/v1/presence/users", {"userIds": [7140919]}, { headers: {
+    await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", {"headers": {"accept": "application/json"}})
+        .then(async response => {
+            if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
+                if (response.data.data[0].updated != lastUpdated.indev && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.indev).getTime() + 1000)) {
+                    log(`✅ INDEV updated. From ${lastUpdated.indev} to ${response.data.data[0].updated}.`);
+                    lastUpdated.indev = response.data.data[0].updated;
+                    fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
+                    sessionInfo.indupd += 1;
+                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# " + timeSince(new Date(response.data.data[0].updated).getTime()));
+                };
+            } else {
+                sessionInfo.erd += 1;
+                log("❌ Line 161: Error reading data: " + JSON.stringify(response.data));
+            };
+        })
+        .catch(error => {
+            sessionInfo.efd += 1;
+            log("❌ Line 166: Error fetching data: " + error);
+        });
+    sessionInfo.checks.updates += 1;
+    sessionInfo.nextChecks.updates = new Date(new Date().getTime() + 60000).toISOString();
+};
+async function checkStatus() {
+    await axios.post("https://presence.roblox.com/v1/presence/users", {"userIds": [7140919]}, { headers: {
         "accept": "application/json",
         "Content-Type": "application/json"
     } })
@@ -218,32 +244,37 @@ async function check(repeat) {
             sessionInfo.efd += 1;
             log(`❌ Line 219: Error fetching data: ${error}`);
         });
-
-    sessionInfo.checks += 1;
-    if (repeat === true) { 
-        sessionInfo.nextCheck = new Date(new Date().getTime() + 120000).toISOString();
-        setTimeout(function() { 
-            check(true); 
-        }, 120000); 
-    };
+    sessionInfo.checks.status += 1;
+    sessionInfo.nextChecks.status = new Date(new Date().getTime() + 30000).toISOString();
 };
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const startUp = (f, t) => { f(); setInterval(f, t * 1000); };
+const changeName = (n, c) => { if (c.name != n) return c.setName(n); };
 client.on('ready', async function() {
     const tc = await client.channels.fetch('1264712451572891678');
     const vc = await client.channels.fetch('1283187128469295176');
-    await tc.setName("🟢︱ftfspy");
-    await vc.setName("bot: online 🟢");
+    await changeName("🟢︱ftfspy", tc);
+    await changeName("bot: online 🟢", vc);
+    client.user.setPresence({
+        activities: [{
+            name: 'MrWindy 🎀',
+            type: ActivityType.Watching
+        }],
+        status: 'online'
+    });
+    startUp(checkTesters, 120);
+    startUp(checkUpdates, 60);
+    startUp(checkStatus, 30);
     app.listen(process.env.port, function() {
         console.log("✅ http://localhost:" + process.env.port);
-        log("🟢 Online");
     });
-    check(true);
+    log("🟢 Online");
     for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
         process.on(evt, async function() {
             process.stdin.resume();
-            await tc.setName("🔴︱ftfspy");
-            await vc.setName("bot: offline 🔴");
+            await changeName("🔴︱ftfspy", tc);
+            await changeName("bot: offline 🔴", vc);
             await log("🔴 Offline");
             process.exit();
         });

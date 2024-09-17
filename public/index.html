@@ -16,12 +16,11 @@
             .links {
                 padding: 10px;
             }
-            .current {
-                color: #ffffff;
-				text-decoration: none;
+            .other {
+                color: #808080;
             }
             a {
-                color: #808080;
+                color: #ffffff;
             }
             .container {
                 left: 50%;
@@ -54,26 +53,30 @@
     <body>
         <div class="container">
             <div class="links">
-                <a href="#" class="current">home</a> <a href="/logs.txt">logs</a> <a href="/lastupdated.json">last updated</a> <a href="/testers.json">testers</a><br><br>
+                <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/lastupdated.json">last updated</a> <a class="other" href="/testers.json">testers</a><br><br>
             </div>
             <div class="title">
                 <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
             </div><br>
-            <span>🔎 Checks: <span class="blue" id="checks"></span></span><br>
+            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=testers'})">Testers</a> Checks: <span class="blue" id="testersChecks"></span></span><br>
+            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=updates'})">Updates</a> Checks: <span class="blue" id="updatesChecks"></span></span><br>
+            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=status'})">Status</a> Checks: <span class="blue" id="statusChecks"></span></span><br>
             <span>👥 TSII: <span class="blue" id="tsii"></span></span><br>
             <span>🔵 Last Status: <span class="blue" id="lastStatus"></span></span><br>
             <span>✅ <a class="current" href="https://www.roblox.com/games/893973440/Flee-the-Facility">FTF</a> Updates: <span class="green" id="ftfupd"></span></span><br>
             <span>✅ <a class="current" href="https://www.roblox.com/games/455327877/FTF-In-Dev">INDEV</a> Updates: <span class="green" id="indupd"></span></span><br>
-            <span>❌ Read errors: <span class="red" id="erd"></span></span><br>
-            <span>❌ Fetch errors: <span class="red" id="efd"></span></span><br>
-            <span>❌ Message errors: <span class="red" id="esm"></span></span><br>
+            <span>❌ Read Errors: <span class="red" id="erd"></span></span><br>
+            <span>❌ Fetch Errors: <span class="red" id="efd"></span></span><br>
+            <span>❌ Message Errors: <span class="red" id="esm"></span></span><br>
             <span class="small">⏱️ Runtime: <span id="runtime"></span></span><br>
-            <span class="small">⌛ Next check: <span id="nextCheck"></span></span><br>
-            <a style="font-size: small; color: rgb(109, 109, 121); padding: 3px; margin: 0; text-decoration: none; border-radius: 2.5px; border: 1px solid rgb(109, 109, 121);" href="#" onclick="$.ajax('/check')">🔎 Run check</a><br><br>
+            <span class="small">⌛ Next Testers Check: <span id="nextTestersCheck"></span></span><br>
+            <span class="small">⌛ Next Updates Check: <span id="nextUpdatesCheck"></span></span><br>
+            <span class="small">⌛ Next Status Check: <span id="nextStatusCheck"></span></span><br>
+            <br>
         </div>
     </body>
     <script type="text/javascript">
-        const info = {checks: document.getElementById("checks"), tsii: document.getElementById("tsii"), lastStatus: document.getElementById("lastStatus"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextCheck: document.getElementById("nextCheck")};
+        const info = {testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), statusChecks: document.getElementById("statusChecks"), tsii: document.getElementById("tsii"), lastStatus: document.getElementById("lastStatus"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -103,9 +106,13 @@
             const statusText = ['Offline', 'Online', 'Playing', 'In Studio', 'Invisible'];
             $.ajax("/info", {
                 success: function(data) {
-                    const nextCheck = new Date(data.nextCheck).getTime();
+                    const nextTestersCheck = new Date(data.nextChecks.testers).getTime();
+                    const nextUpdatesCheck = new Date(data.nextChecks.updates).getTime();
+                    const nextStatusCheck = new Date(data.nextChecks.status).getTime();
                     const runtimeDate = new Date(data.startTime).getTime();
-                    info.checks.innerHTML = data.checks;
+                    info.testersChecks.innerHTML = data.checks.testers;
+                    info.updatesChecks.innerHTML = data.checks.updates;
+                    info.statusChecks.innerHTML = data.checks.status;
                     info.tsii.innerHTML = data.tsii.length > 0 ? data.tsii.join(", ") : "None";
                     info.lastStatus.innerHTML = statusText[data.lastStatus];
                     info.ftfupd.innerHTML = data.ftfupd;
@@ -114,11 +121,12 @@
                     info.efd.innerHTML = data.efd;
                     info.esm.innerHTML = data.esm;
                     info.runtime.innerHTML = timeSince(runtimeDate);
-                    info.nextCheck.innerHTML = timeUntil(nextCheck);
+                    info.nextTestersCheck.innerHTML = timeUntil(nextTestersCheck);
+                    info.nextUpdatesCheck.innerHTML = timeUntil(nextUpdatesCheck);
+                    info.nextStatusCheck.innerHTML = timeUntil(nextStatusCheck);
                 }
             });
-            setTimeout(main, 1000);
         };
-        main();
+        setInterval(main, 1000);
     </script>
 </html>
