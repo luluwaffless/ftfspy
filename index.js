@@ -207,7 +207,7 @@ async function check(repeat) {
                 if (sessionInfo.lastStatus != response.data.userPresences[0].userPresenceType) {
                     log(`🔎 MrWindy's status changed from ${sessionInfo.lastStatus} to ${response.data.userPresences[0].userPresenceType}`);
                     sessionInfo.lastStatus = response.data.userPresences[0].userPresenceType;
-                    send(`\`${statusEmoji[sessionInfo.lastStatus]}\` o [MrWindy](https://www.roblox.com/users/7140919/profile) está ${statusText[sessionInfo.lastStatus]}\n-# ||<@&1284206679822696559>||`);
+                    send(`\`${statusEmoji[sessionInfo.lastStatus]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.lastStatus]}\n-# ||<@&1284206679822696559>||`);
                 };
             } else {
                 sessionInfo.erd += 1;
