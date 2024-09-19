@@ -3,7 +3,6 @@ import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
 import { Client, GatewayIntentBits, ActivityType } from "discord.js";
-import { start } from "node:repl";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
