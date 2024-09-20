@@ -9,9 +9,20 @@
             body {
                 font-size: large;
                 text-align: center;
-                background-color: rgb(25, 25, 75);
                 color: rgb(237, 237, 249);
                 font-family: 'Courier New', Courier, monospace;
+            }
+            .offline {
+                background-color: hsl(0, 0%, 10%);
+            }
+            .online {
+                background-color: rgb(25, 25, 77);
+            }
+            .playing {
+                background-color: rgb(25, 77, 25);
+            }
+            .inStudio {
+                background-color: rgb(77, 51, 25);
             }
             .links {
                 padding: 10px;
@@ -22,7 +33,7 @@
             a {
                 color: #ffffff;
             }
-            .container {
+            #container {
                 left: 50%;
                 top: 50%;
                 transform: translate(-50%, -50%);
@@ -30,7 +41,18 @@
                 border-radius: 10px;
                 padding: 10px;
                 box-shadow: 0px 0px 10px 5px rgba(10, 10, 20, 0.2);
-                background-color: rgb(37, 37, 100);
+            }
+            .containerOffline {
+                background-color: rgb(38, 38, 39);
+            }
+            .containerOnline {
+                background-color: rgb(32, 32, 96);
+            }
+            .containerPlaying {
+                background-color: rgb(29, 86, 29);
+            }
+            .containerInStudio {
+                background-color: rgb(86, 57, 29);
             }
             .blue {
                 color: rgb(128, 128, 255);
@@ -50,8 +72,8 @@
         </style>
 	<link rel="icon" type="image/x-icon" href="icon.png">
     </head>
-    <body>
-        <div class="container">
+    <body class="offline">
+        <div id="container" class="containerOffline">
             <div class="links">
                 <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/lastupdated.json">last updated</a> <a class="other" href="/testers.json">testers</a><br><br>
             </div>
@@ -102,6 +124,9 @@
             parts.push(seconds.toString().padStart(minutes || hours ? 2 : 1, '0'));
             return parts.join(':');
         };
+        const bodyStatusClasses = ["offline", "online", "playing", "inStudio"];
+        const containerStatusClasses = ["containerOffline", "containerOnline", "containerPlaying", "containerInStudio"];
+        let lastStatus = 0;
         function main() {
             const statusText = ['Offline', 'Online', 'Playing', 'In Studio', 'Invisible'];
             $.ajax("/info", {
@@ -124,6 +149,11 @@
                     info.nextTestersCheck.innerHTML = timeUntil(nextTestersCheck);
                     info.nextUpdatesCheck.innerHTML = timeUntil(nextUpdatesCheck);
                     info.nextStatusCheck.innerHTML = timeUntil(nextStatusCheck);
+                    if (lastStatus != data.lastStatus) {
+                        lastStatus = data.lastStatus;
+                        document.body.className = bodyStatusClasses[lastStatus];
+                        document.getElementById("container").className = containerStatusClasses[lastStatus];
+                    };
                 }
             });
         };
