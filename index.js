@@ -8,7 +8,7 @@ const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
 let testers = JSON.parse(fs.readFileSync("public/testers.json", "utf8"));
-let sessionInfo = {checks: {testers: 0, updates: 0, status: 0}, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatus: 0, startTime: new Date().toISOString(), nextChecks: {testers: "", updates: "", status: ""}};
+let sessionInfo = {checks: {testers: 0, updates: 0, status: 0}, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatusBegin: new Date().toISOString(), lastStatus: 0, status: 0, startTime: new Date().toISOString(), nextChecks: {testers: "", updates: "", status: ""}};
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -19,7 +19,8 @@ async function send(content) {
             log(`❌ Line 19: Error sending message: ${error}`);
         });
 };
-function timeSince(timestamp) {
+function timeSince(isostr) {
+    const timestamp = new Date(isostr).getTime();
     const now = new Date().getTime();
     const diff = now - timestamp;
     const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -29,7 +30,7 @@ function timeSince(timestamp) {
     if (hours && hours > 0) parts.push(`${hours} hora${hours != 1 ? "s" : ""}`);
     if (minutes && minutes > 0) parts.push(`${minutes} minuto${minutes != 1 ? "s" : ""}`);
     if (seconds && seconds > 0) parts.push(`${seconds} segundo${seconds != 1 ? "s" : ""}`);
-    return parts.length > 0 ? `há ${parts.join(", ")}` : "agora";
+    return parts.length > 0 ? parts.join(", ") : "agora";
 };
 function getTester(id) {
     for (let i = 0; i < testers.data.length; i++) {
@@ -179,11 +180,11 @@ async function checkUpdates() {
                     axios.get("https://thumbnails.roblox.com/v1/games/icons?universeIds=372226183&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false", {"headers": {"accept": "application/json"}})
                         .then(image => {
                             if (image.data["data"] && image.data.data[0] && image.data.data[0]["imageUrl"]) {
-                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# ${timeSince(new Date(response.data.data[0].updated).getTime())}`);
+                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}`);
                             } else {
                                 sessionInfo.erd += 1;
                                 log("❌ Line 183: Error reading data: " + JSON.stringify(image.data));
-                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n-# ${timeSince(new Date(response.data.data[0].updated).getTime())}`);
+                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}`);
                             }
                         })
                         .catch(error => {
@@ -208,7 +209,7 @@ async function checkUpdates() {
                     lastUpdated.indev = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
                     sessionInfo.indupd += 1;
-                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# " + timeSince(new Date(response.data.data[0].updated).getTime()));
+                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# há " + timeSince(response.data.data[0].updated));
                 };
             } else {
                 sessionInfo.erd += 1;
@@ -229,10 +230,12 @@ async function checkStatus() {
     } })
         .then(function(response) {
             if (response.data["userPresences"] && response.data.userPresences[0] && !isNaN(response.data.userPresences[0]["userPresenceType"])) {
-                if (sessionInfo.lastStatus != response.data.userPresences[0].userPresenceType) {
-                    log(`🔎 MrWindy's status changed from ${sessionInfo.lastStatus} to ${response.data.userPresences[0].userPresenceType}`);
-                    sessionInfo.lastStatus = response.data.userPresences[0].userPresenceType;
-                    send(`\`${statusEmoji[sessionInfo.lastStatus]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.lastStatus]}\n-# ||<@&1284206679822696559>||`);
+                if (sessionInfo.status != response.data.userPresences[0].userPresenceType) {
+                    log(`🔎 MrWindy's status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
+                    sessionInfo.lastStatus = sessionInfo.status;
+                    sessionInfo.status = response.data.userPresences[0].userPresenceType;
+                    send(`\`${statusEmoji[sessionInfo.status]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.status]}\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}\n-# ||<@&1284206679822696559>||`);
+                    sessionInfo.lastStatusBegin = new Date().toISOString();
                 };
             } else {
                 sessionInfo.erd += 1;
