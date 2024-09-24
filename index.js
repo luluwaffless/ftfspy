@@ -112,7 +112,7 @@ async function checkTesters() {
                             sessionInfo.tsii.push(token);
                         };
                         tokens.push(token);
-                        batchData.push({ "requestId": `0:${token}:AvatarHeadshot:150x150:webp:regular`, "targetId": 0, "token": token, "type": "AvatarHeadShot", "size": "150x150", "format": "webp" });
+                        batchData.push({ "requestId": `0:${token}:AvatarHeadshot:150x150:png:regular`, "targetId": 0, "token": token, "type": "AvatarHeadShot", "size": "150x150", "format": "png" });
                     };
                     for (let i = 0; i < sessionInfo.tsii.length; i++) {
                         if (!tokens.includes(sessionInfo.tsii[i])) {
