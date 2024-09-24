@@ -138,6 +138,9 @@ async function checkTesters() {
                                 log("❌ Line 135: Error fetching data: " + error);
                             });
                     };
+                } else if (sessionInfo.tsii.length > 0) {
+                    await send(`\`👥\` todos desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>) saíram\n-# ||<@&1273043382519861430>||`);
+                    sessionInfo.tsii = [];
                 };
             } else {
                 sessionInfo.erd += 1;
