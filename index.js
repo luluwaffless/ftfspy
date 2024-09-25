@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
-let sessionInfo = { checks: { testers: 0, updates: 0, status: 0 }, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatusBegin: new Date().toISOString(), lastStatus: 0, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", status: "" } };
+let sessionInfo = { checks: { testers: 0, updates: 0, status: 0 }, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", status: "" } };
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -225,7 +225,7 @@ async function checkStatus(individual) {
                     log(`🔎 MrWindy's status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
                     sessionInfo.lastStatus = sessionInfo.status;
                     sessionInfo.status = response.data.userPresences[0].userPresenceType;
-                    send(`\`${statusEmoji[sessionInfo.status]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.status]}\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}\n-# ||<@&1284206679822696559>||`);
+                    send(`\`${statusEmoji[sessionInfo.status]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus >= 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&1284206679822696559>||`);
                     sessionInfo.lastStatusBegin = new Date().toISOString();
                 };
             } else {
@@ -255,8 +255,8 @@ async function updateStatus(goingOffline) {
         .addFields(
             { "name": "desenvolvedores no indev", "value": `\`👥\` ${sessionInfo.tsii.length}${sessionInfo.tsii.length > 0 ? " [(veja aqui)](https://discord.com/channels/1247404953073483877/1264712451572891678)" : ""}` },
             { "name": "últimas atualizações", "value": `\`indev\`  - <t:${Math.floor(new Date(lastUpdated.indev).getTime() / 1000)}>\n\`flee the facility\` - <t:${Math.floor(new Date(lastUpdated.ftf).getTime() / 1000)}>` },
-            { "name": "status atual do MrWindy", "value": `\`${statusEmoji[sessionInfo.status]}\` ${statusText[sessionInfo.status]} (<t:${Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000)}:R>)` },
-            { "name": "último status do MrWindy", "value": `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` },
+            { "name": "status atual do MrWindy", "value": `\`${statusEmoji[sessionInfo.status]}\` ${statusText[sessionInfo.status]}${sessionInfo.lastStatus >= 0 ? ` (<t:${Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000)}:R>)` : ""}` },
+            { "name": "último status do MrWindy", "value": sessionInfo.lastStatus >= 0 ? `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` : "`❔` nenhum" },
             { "name": "próximas verificações", "value": `\`desenvolvedores no indev\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
         )
         .setFooter({ text: "por luluwaffless" });
