@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import sharp from "sharp";
 import FormData from "form-data";
-import { Client, GatewayIntentBits, ActivityType } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType, EmbedBuilder } from "discord.js";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
@@ -87,18 +87,18 @@ app.get("/info", (_, res) => {
 });
 app.get("/check", async function (req, res) {
     if (req.query.check == "testers") {
-        await checkTesters();
+        await checkTesters(true);
     } else if (req.query.check == "updates") {
-        await checkUpdates();
+        await checkUpdates(true);
     } else if (req.query.check == "status") {
-        await checkStatus();
+        await checkStatus(true);
     };
     res.json(sessionInfo);
 });
 
 const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
 const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
-async function checkTesters() {
+async function checkTesters(individual) {
     await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", { "headers": { "accept": "application/json" } })
         .then(async instances => {
             if (instances.data["data"]) {
@@ -153,9 +153,10 @@ async function checkTesters() {
             log("❌ Line 156: Error fetching data: " + error);
         });
     sessionInfo.checks.testers += 1;
-    sessionInfo.nextChecks.testers = new Date(new Date().getTime() + 120000).toISOString();
+    if (!individual) sessionInfo.nextChecks.testers = new Date(new Date().getTime() + 120000).toISOString();
+    await updateStatus();
 };
-async function checkUpdates() {
+async function checkUpdates(individual) {
     await axios.get("https://games.roblox.com/v1/games?universeIds=372226183", { "headers": { "accept": "application/json" } })
         .then(response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
@@ -208,9 +209,10 @@ async function checkUpdates() {
             log("❌ Line 166: Error fetching data: " + error);
         });
     sessionInfo.checks.updates += 1;
-    sessionInfo.nextChecks.updates = new Date(new Date().getTime() + 60000).toISOString();
+    if (!individual) sessionInfo.nextChecks.updates = new Date(new Date().getTime() + 60000).toISOString();
+    await updateStatus(false);
 };
-async function checkStatus() {
+async function checkStatus(individual) {
     await axios.post("https://presence.roblox.com/v1/presence/users", { "userIds": [7140919] }, {
         headers: {
             "accept": "application/json",
@@ -236,10 +238,40 @@ async function checkStatus() {
             log(`❌ Line 219: Error fetching data: ${error}`);
         });
     sessionInfo.checks.status += 1;
-    sessionInfo.nextChecks.status = new Date(new Date().getTime() + 30000).toISOString();
+    if (!individual) sessionInfo.nextChecks.status = new Date(new Date().getTime() + 30000).toISOString();
+    await updateStatus(false);
 };
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+let statusMessage;
+let updating = false;
+async function updateStatus(goingOffline) {
+    if (updating) return;
+    updating = true;
+    const embed = new EmbedBuilder()
+        .setColor(goingOffline ? 0xff0000 : 0x00ff00)
+        .setTitle("ftf spy :3")
+        .setDescription("stalkeadores de marretão")
+        .addFields(
+            { "name": "desenvolvedores no indev", "value": `\`👥\` ${sessionInfo.tsii.length}${sessionInfo.tsii.length > 0 ? " [(veja aqui)](https://discord.com/channels/1247404953073483877/1264712451572891678)" : ""}` },
+            { "name": "últimas atualizações", "value": `\`indev\`  - <t:${Math.floor(new Date(lastUpdated.indev).getTime() / 1000)}>\n\`flee the facility\` - <t:${Math.floor(new Date(lastUpdated.ftf).getTime() / 1000)}>` },
+            { "name": "status atual do MrWindy", "value": `\`${statusEmoji[sessionInfo.status]}\` ${statusText[sessionInfo.status]} (<t:${Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000)}:R>)` },
+            { "name": "último status do MrWindy", "value": `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` },
+            { "name": "próximas verificações", "value": `\`desenvolvedores no indev\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
+        )
+        .setFooter({ text: "por luluwaffless" });
+
+    if (!statusMessage) {
+        const statusChannel = await client.channels.fetch('1288611969867317269');
+        await statusChannel.send({ embeds: [embed] })
+            .then(message => {
+                statusMessage = message;
+            });
+    } else {
+        await statusMessage.edit({ embeds: [embed] });
+    };
+    updating = false;
+};
 const startUp = (f, t) => { f(); setInterval(f, t * 1000); };
 const changeName = (n, c) => { if (c.name != n) return c.setName(n); };
 client.on('ready', async function () {
@@ -266,6 +298,7 @@ client.on('ready', async function () {
             process.stdin.resume();
             await changeName("🔴︱ftfspy", tc);
             await changeName("bot: offline 🔴", vc);
+            await updateStatus(true);
             await log("🔴 Offline");
             process.exit();
         });
