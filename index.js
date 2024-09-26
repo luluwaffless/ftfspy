@@ -2,13 +2,14 @@ import fs from "node:fs";
 import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
-import sharp from "sharp";
+// import sharp from "sharp";
 import FormData from "form-data";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder } from "discord.js";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
+let testers = JSON.parse(fs.readFileSync("public/testers.json", "utf8"));
 let sessionInfo = { checks: { testers: 0, updates: 0, status: 0 }, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", status: "" } };
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
@@ -49,6 +50,7 @@ function timeSince(isostr) {
     if (seconds && seconds > 0) parts.push(`${seconds} segundo${seconds != 1 ? "s" : ""}`);
     return parts.length > 0 ? parts.join(", ") : "agora";
 };
+/*
 async function downloadImageAsBuffer(url) {
     const response = await axios({
         url,
@@ -82,6 +84,44 @@ async function combineImages(imageUrls) {
     }))).png().toBuffer();
     return combinedImageBuffer;
 };
+*/
+function getTester(id) {
+    for (let i = 0; i < testers.data.length; i++) {
+        if (testers.data[i].id === id) {
+            return testers.data[i];
+        };
+    };
+    return null;
+};
+async function getTesters(responseBatch) {
+    let returnArr = []
+    for (let batch of responseBatch.data) {
+        for (let i = 0; i < testers.data.length; i++) {
+            if (testers.data[i].img == batch.imageUrl) {
+                returnArr.push(testers.data[i]);
+            } else {
+                await axios.post("https://thumbnails.roblox.com/v1/batch", [{"requestId": `${testers.data[i].id}::AvatarHeadshot:150x150:webp:regular`, "targetId": Number(testers.data[i].id), "token": "", "type": "AvatarHeadShot", "size": "150x150", "format": "webp"}], {"headers": {"accept": "application/json", "Content-Type": "application/json"}})
+                    .then(testerBatch => {
+                        if (testerBatch.data["data"] && testerBatch.data.data[0] && testerBatch.data.data[0]["imageUrl"]) {
+                            if (testerBatch.data.data[0].imageUrl == batch.imageUrl) {
+                                returnArr.push(testers.data[i]);
+                                testers.data[i].img = testerBatch.data.data[0].imageUrl;
+                                fs.writeFileSync("public/testers.json", JSON.stringify(testers));
+                            };
+                        } else {
+                            sessionInfo.erd += 1;
+                            log("❌ Line 59: Line  Error reading data: " + JSON.stringify(testerBatch.data));
+                        };
+                    })
+                    .catch(error => {
+                        sessionInfo.efd += 1;
+                        log("❌ Line 64: Error fetching data: " + error);
+                    });
+            };
+        };
+    };
+    return returnArr;
+};
 app.get("/info", (_, res) => {
     res.json(sessionInfo);
 });
@@ -99,6 +139,7 @@ app.get("/check", async function (req, res) {
 const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
 const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
 async function checkTesters(individual) {
+    /*
     await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", { "headers": { "accept": "application/json" } })
         .then(async instances => {
             if (instances.data["data"]) {
@@ -142,6 +183,72 @@ async function checkTesters(individual) {
                 } else if (sessionInfo.tsii.length > 0) {
                     await send(`\`👥\` todos desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>) saíram\n-# ||<@&1273043382519861430>||`);
                     sessionInfo.tsii = [];
+                };
+            } else {
+                sessionInfo.erd += 1;
+                log("❌ Line 151: Error reading data: " + JSON.stringify(instances.data));
+            };
+        })
+        .catch(error => {
+            sessionInfo.efd += 1;
+            log("❌ Line 156: Error fetching data: " + error);
+        });
+    */
+    await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", {"headers": {"accept": "application/json"}})
+        .then(async instances => {
+            if (instances.data["data"] && instances.data.data[0] && instances.data.data[0]["playerTokens"]) {
+                if (instances.data.data[0].playerTokens.length < 3) return;
+                let batchData = [];
+                for (let token of instances.data.data[0].playerTokens) {
+                    batchData.push({"requestId": `0:${token}:AvatarHeadshot:150x150:webp:regular`, "targetId": 0, "token": token, "type": "AvatarHeadShot", "size": "150x150", "format": "webp"});
+                };
+                await axios.post("https://thumbnails.roblox.com/v1/batch", batchData, {"headers": {"accept": "application/json", "Content-Type": "application/json"}})
+                    .then(async batches => {
+                        if (batches.data["data"] && batches.data.data.length > 0) {
+                            const testers = await getTesters(batches.data);
+                            if (testers && testers.length > 0) {
+                                let diff = [];
+                                let list = [];
+                                let testerIds = [];
+                                testers.forEach(tester => {
+                                    list.push(`- [${tester.name}](<https://www.roblox.com/users/${tester.id}/profile>)`);
+                                    testerIds.push(tester.id);
+                                    if (!sessionInfo.tsii.includes(tester.id)) {
+                                        diff.push(`+ ${tester.name} (${tester.id})`)
+                                        sessionInfo.tsii.push(tester.id);
+                                    };
+                                });
+                                for (let i = 0; i < sessionInfo.tsii.length; i++) {
+                                    if (!testerIds.includes(sessionInfo.tsii[i])) {
+                                        const tester = getTester(sessionInfo.tsii[i]);
+                                        diff.push(`- ${tester.name} (${tester.id})`);
+                                        sessionInfo.tsii.splice(i, 1);
+                                    };
+                                };
+                                if (diff.length > 0) {
+                                    send(`\`👥\` desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>):\n${list.join('\n')}\n\`\`\`diff\n${diff.join('\n')}\n\`\`\`\n-# ||<@&1273043382519861430>||`);
+                                };
+                            };
+                        } else {
+                            sessionInfo.erd += 1;
+                            log("❌ Line 130: Error reading data: " + JSON.stringify(batches.data));
+                        };
+                    })
+                    .catch(error => {
+                        sessionInfo.efd += 1;
+                        log("❌ Line 135: Error fetching data: " + error);
+                    });
+            } else if (sessionInfo.tsii.length > 0 && instances.data["data"] && !instances.data.data[0]) {
+                let diff = [];
+                for (let i = 0; i < sessionInfo.tsii.length; i++) {
+                    if (!testerIds.includes(sessionInfo.tsii[i])) {
+                        const tester = getTester(sessionInfo.tsii[i]);
+                        diff.push(`- ${tester.name} (${tester.id})`);
+                        sessionInfo.tsii.splice(i, 1);
+                    };
+                };
+                if (diff.length > 0) {
+                    send(`\`👥\` desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>):\`\`\`diff\n${diff.join('\n')}\n\`\`\`\n-# ||<@&1273043382519861430>||`);
                 };
             } else {
                 sessionInfo.erd += 1;
