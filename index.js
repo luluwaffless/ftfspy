@@ -225,7 +225,7 @@ async function checkStatus(individual) {
                     log(`🔎 MrWindy's status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
                     sessionInfo.lastStatus = sessionInfo.status;
                     sessionInfo.status = response.data.userPresences[0].userPresenceType;
-                    send(`\`${statusEmoji[sessionInfo.status]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus >= 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&1284206679822696559>||`);
+                    send(`\`${statusEmoji[sessionInfo.status]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&1284206679822696559>||`);
                     sessionInfo.lastStatusBegin = new Date().toISOString();
                 };
             } else {
