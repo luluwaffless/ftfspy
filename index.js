@@ -1,3 +1,4 @@
+import config from "./config.js";
 import fs from "node:fs";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -9,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(express.static("public"));
 let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
-let sessionInfo = { checks: { testers: 0, updates: 0, status: 0 }, indupd: 0, ftfupd: 0, erd: 0, efd: 0, esm: 0, tsii: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", status: "" } };
+let sessionInfo = { checks: { testers: 0, updates: 0, status: 0 }, testupd: 0, mainupd: 0, erd: 0, efd: 0, esm: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", status: "" } };
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -85,6 +86,9 @@ async function combineImages(imageUrls) {
 app.get("/info", (_, res) => {
     res.json(sessionInfo);
 });
+app.get("/config", function(_, res) {
+    res.json(config);
+});
 app.get("/check", async function (req, res) {
     if (req.query.check == "testers") {
         await checkTesters(true);
@@ -99,26 +103,26 @@ app.get("/check", async function (req, res) {
 const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
 const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
 async function checkTesters(individual) {
-    await axios.get("https://games.roblox.com/v1/games/455327877/servers/0?sortOrder=2&excludeFullGames=false&limit=10", { "headers": { "accept": "application/json" } })
+    await axios.get(`https://games.roblox.com/v1/games/${config.testGame.placeId}/servers/0?sortOrder=2&excludeFullGames=false&limit=10`, { "headers": { "accept": "application/json" } })
         .then(async instances => {
             if (instances.data["data"]) {
                 if (instances.data.data[0] && instances.data.data[0]["playerTokens"]) {
-                    if (instances.data.data[0].playerTokens.length < 2 && sessionInfo.tsii.length == 0) return;
+                    if (instances.data.data[0].playerTokens.length < 2 && sessionInfo.tsit.length == 0) return;
                     let changed = false;
                     let batchData = [];
                     let tokens = [];
                     for (let token of instances.data.data[0].playerTokens) {
-                        if (!sessionInfo.tsii.includes(token)) {
+                        if (!sessionInfo.tsit.includes(token)) {
                             changed = true;
-                            sessionInfo.tsii.push(token);
+                            sessionInfo.tsit.push(token);
                         };
                         tokens.push(token);
                         batchData.push({ "requestId": `0:${token}:AvatarHeadshot:150x150:png:regular`, "targetId": 0, "token": token, "type": "AvatarHeadShot", "size": "150x150", "format": "png" });
                     };
-                    for (let i = 0; i < sessionInfo.tsii.length; i++) {
-                        if (!tokens.includes(sessionInfo.tsii[i])) {
+                    for (let i = 0; i < sessionInfo.tsit.length; i++) {
+                        if (!tokens.includes(sessionInfo.tsit[i])) {
                             changed = true;
-                            sessionInfo.tsii.splice(i, 1);
+                            sessionInfo.tsit.splice(i, 1);
                         };
                     };
                     if (changed) {
@@ -128,7 +132,7 @@ async function checkTesters(individual) {
                                     let imageUrls = [];
                                     for (let batch of batches.data.data) imageUrls.push(batch.imageUrl);
                                     const combinedImageBuffer = await combineImages(imageUrls);
-                                    await send(`\`👥\` desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>):\n-# ||<@&1273043382519861430>||`, combinedImageBuffer);
+                                    await send(`\`👥\` desenvolvedores vistos no [${config.testGame.displayName}](<https://www.roblox.com/games/${config.testGame.placeId}>):\n-# ||<@&${config.discord.testerPing}>||`, combinedImageBuffer);
                                 } else {
                                     sessionInfo.erd += 1;
                                     log("❌ Line 130: Error reading data: " + JSON.stringify(batches.data));
@@ -139,9 +143,9 @@ async function checkTesters(individual) {
                                 log("❌ Line 135: Error fetching data: " + error);
                             });
                     };
-                } else if (sessionInfo.tsii.length > 0) {
-                    await send(`\`👥\` todos desenvolvedores vistos no [indev](<https://www.roblox.com/games/455327877/FTF-In-Dev>) saíram\n-# ||<@&1273043382519861430>||`);
-                    sessionInfo.tsii = [];
+                } else if (sessionInfo.tsit.length > 0) {
+                    await send(`\`👥\` todos desenvolvedores vistos no [${config.testGame.displayName}](<https://www.roblox.com/games/${config.testGame.placeId}>) saíram\n-# ||<@&${config.discord.testerPing}>||`);
+                    sessionInfo.tsit = [];
                 };
             } else {
                 sessionInfo.erd += 1;
@@ -157,22 +161,22 @@ async function checkTesters(individual) {
     await updateStatus();
 };
 async function checkUpdates(individual) {
-    await axios.get("https://games.roblox.com/v1/games?universeIds=372226183", { "headers": { "accept": "application/json" } })
+    await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.mainGame.universeId}`, { "headers": { "accept": "application/json" } })
         .then(response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
-                if (response.data.data[0].updated != lastUpdated.ftf && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.ftf).getTime() + 1000)) {
-                    log(`✅ FTF updated. From ${lastUpdated.ftf} to ${response.data.data[0].updated}.`);
-                    lastUpdated.ftf = response.data.data[0].updated;
+                if (response.data.data[0].updated != lastUpdated.main && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.main).getTime() + 1000)) {
+                    log(`✅ ${config.mainGame.name.toUpperCase()} updated. From ${lastUpdated.main} to ${response.data.data[0].updated}.`);
+                    lastUpdated.main = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
-                    sessionInfo.ftfupd += 1;
-                    axios.get("https://thumbnails.roblox.com/v1/games/icons?universeIds=372226183&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false", { "headers": { "accept": "application/json" } })
+                    sessionInfo.mainupd += 1;
+                    axios.get(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${config.mainGame.universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`, { "headers": { "accept": "application/json" } })
                         .then(image => {
                             if (image.data["data"] && image.data.data[0] && image.data.data[0]["imageUrl"]) {
-                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}`);
+                                send(`# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}`);
                             } else {
                                 sessionInfo.erd += 1;
                                 log("❌ Line 183: Error reading data: " + JSON.stringify(image.data));
-                                send(`# \`🚨\` [MARRETÃO](https://www.roblox.com/games/893973440/Flee-the-Facility) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}`);
+                                send(`# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}`);
                             }
                         })
                         .catch(error => {
@@ -189,15 +193,15 @@ async function checkUpdates(individual) {
             sessionInfo.efd += 1;
             log("❌ Line 199: Error fetching data: " + error)
         });
-    await axios.get("https://games.roblox.com/v1/games?universeIds=174252938", { "headers": { "accept": "application/json" } })
+    await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.testGame.universeId}`, { "headers": { "accept": "application/json" } })
         .then(async response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
-                if (response.data.data[0].updated != lastUpdated.indev && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.indev).getTime() + 1000)) {
-                    log(`✅ INDEV updated. From ${lastUpdated.indev} to ${response.data.data[0].updated}.`);
-                    lastUpdated.indev = response.data.data[0].updated;
+                if (response.data.data[0].updated != lastUpdated.test && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.test).getTime() + 1000)) {
+                    log(`✅ ${config.testGame.name.toUpperCase()} updated. From ${lastUpdated.test} to ${response.data.data[0].updated}.`);
+                    lastUpdated.test = response.data.data[0].updated;
                     fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
-                    sessionInfo.indupd += 1;
-                    send("# `🚨` [INDEV](<https://www.roblox.com/games/455327877/FTF-In-Dev>) ATUALIZOU @everyone\n-# há " + timeSince(response.data.data[0].updated));
+                    sessionInfo.testupd += 1;
+                    send(`# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU @everyone\n-# há ${timeSince(response.data.data[0].updated)}`);
                 };
             } else {
                 sessionInfo.erd += 1;
@@ -213,7 +217,7 @@ async function checkUpdates(individual) {
     await updateStatus(false);
 };
 async function checkStatus(individual) {
-    await axios.post("https://presence.roblox.com/v1/presence/users", { "userIds": [7140919] }, {
+    await axios.post("https://presence.roblox.com/v1/presence/users", { "userIds": [config.leadDev.userId] }, {
         headers: {
             "accept": "application/json",
             "Content-Type": "application/json"
@@ -222,10 +226,10 @@ async function checkStatus(individual) {
         .then(function (response) {
             if (response.data["userPresences"] && response.data.userPresences[0] && !isNaN(response.data.userPresences[0]["userPresenceType"])) {
                 if (sessionInfo.status != response.data.userPresences[0].userPresenceType) {
-                    log(`🔎 MrWindy's status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
+                    log(`🔎 ${config.leadDev.username}'s status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
                     sessionInfo.lastStatus = sessionInfo.status;
                     sessionInfo.status = response.data.userPresences[0].userPresenceType;
-                    send(`\`${statusEmoji[sessionInfo.status]}\` o [MrWindy](<https://www.roblox.com/users/7140919/profile>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&1284206679822696559>||`);
+                    send(`\`${statusEmoji[sessionInfo.status]}\` ${config.leadDev.preDisplay} [${config.leadDev.displayName}](<https://www.roblox.com/users/${config.leadDev.userId}>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&${config.discord.statusPing}>||`);
                     sessionInfo.lastStatusBegin = new Date().toISOString();
                 };
             } else {
@@ -250,19 +254,19 @@ async function updateStatus(goingOffline) {
     updating = true;
     const embed = new EmbedBuilder()
         .setColor(goingOffline ? 0xff0000 : 0x00ff00)
-        .setTitle("ftf spy :3")
-        .setDescription("stalkeadores de marretão")
+        .setTitle(config.discord.displayName)
+        .setDescription(config.discord.description)
         .addFields(
-            { "name": "desenvolvedores no indev", "value": `\`👥\` ${sessionInfo.tsii.length}${sessionInfo.tsii.length > 0 ? " [(veja aqui)](https://discord.com/channels/1247404953073483877/1264712451572891678)" : ""}` },
-            { "name": "últimas atualizações", "value": `\`indev\`  - <t:${Math.floor(new Date(lastUpdated.indev).getTime() / 1000)}>\n\`flee the facility\` - <t:${Math.floor(new Date(lastUpdated.ftf).getTime() / 1000)}>` },
-            { "name": "status atual do MrWindy", "value": `\`${statusEmoji[sessionInfo.status]}\` ${statusText[sessionInfo.status]}${sessionInfo.lastStatus >= 0 ? ` (<t:${Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000)}:R>)` : ""}` },
-            { "name": "último status do MrWindy", "value": sessionInfo.lastStatus >= 0 ? `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` : "`❔` nenhum" },
-            { "name": "próximas verificações", "value": `\`desenvolvedores no indev\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
+            { "name": `desenvolvedores no ${config.testGame.name}`, "value": `\`👥\` ${sessionInfo.tsit.length}${sessionInfo.tsit.length > 0 ? " [(veja aqui)](https://discord.com/channels/1247404953073483877/1264712451572891678)" : ""}` },
+            { "name": "últimas atualizações", "value": `\`${config.testGame.name}\`  - <t:${Math.floor(new Date(lastUpdated.test).getTime() / 1000)}>\n\`${config.mainGame.name}\` - <t:${Math.floor(new Date(lastUpdated.main).getTime() / 1000)}>` },
+            { "name": `status atual d${config.leadDev.preDisplay} ${config.leadDev.displayName}`, "value": `\`${statusEmoji[sessionInfo.status]}\` ${statusText[sessionInfo.status]}${sessionInfo.lastStatus >= 0 ? ` (<t:${Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000)}:R>)` : ""}` },
+            { "name": `último status d${config.leadDev.preDisplay} ${config.leadDev.displayName}`, "value": sessionInfo.lastStatus >= 0 ? `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` : "`❔` nenhum" },
+            { "name": "próximas verificações", "value": `\`desenvolvedores no ${config.testGame.name}\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
         )
         .setFooter({ text: "por luluwaffless" });
 
     if (!statusMessage) {
-        const statusChannel = await client.channels.fetch('1288611969867317269');
+        const statusChannel = await client.channels.fetch(config.discord.statusChannelId);
         await statusChannel.send({ embeds: [embed] })
             .then(message => {
                 statusMessage = message;
@@ -275,13 +279,13 @@ async function updateStatus(goingOffline) {
 const startUp = (f, t) => { f(); setInterval(f, t * 1000); };
 const changeName = (n, c) => { if (c.name != n) return c.setName(n); };
 client.on('ready', async function () {
-    const tc = await client.channels.fetch('1264712451572891678');
-    const vc = await client.channels.fetch('1283187128469295176');
-    await changeName("🟢︱ftfspy", tc);
+    const tc = await client.channels.fetch(config.discord.tcStatusId);
+    const vc = await client.channels.fetch(config.discord.vcStatusId);
+    await changeName("🟢︱" + config.discord.name, tc);
     await changeName("bot: online 🟢", vc);
     client.user.setPresence({
         activities: [{
-            name: 'MrWindy 🎀',
+            name: config.discord.status,
             type: ActivityType.Watching
         }],
         status: 'online'
@@ -289,14 +293,14 @@ client.on('ready', async function () {
     startUp(checkTesters, 120);
     startUp(checkUpdates, 60);
     startUp(checkStatus, 30);
-    app.listen(process.env.port, function () {
-        console.log("✅ http://localhost:" + process.env.port);
+    app.listen(config.port, function () {
+        console.log("✅ http://localhost:" + config.port);
     });
     log("🟢 Online");
     for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
         process.on(evt, async function () {
             process.stdin.resume();
-            await changeName("🔴︱ftfspy", tc);
+            await changeName("🔴︱" + config.discord.name, tc);
             await changeName("bot: offline 🔴", vc);
             await updateStatus(true);
             await log("🔴 Offline");

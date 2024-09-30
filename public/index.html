@@ -75,7 +75,7 @@
     <body class="offline">
         <div id="container" class="containerOffline">
             <div class="links">
-                <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/lastupdated.json">last updated</a><br><br>
+                <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/lastupdated.json">last updated</a> <a class="other" href="/config">config</a><br><br>
             </div>
             <div class="title">
                 <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
@@ -83,10 +83,10 @@
             <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=testers'})">Testers</a> Checks: <span class="blue" id="testersChecks"></span></span><br>
             <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=updates'})">Updates</a> Checks: <span class="blue" id="updatesChecks"></span></span><br>
             <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=status'})">Status</a> Checks: <span class="blue" id="statusChecks"></span></span><br>
-            <span>👥 TSII: <span class="blue" id="tsii"></span></span><br>
+            <span>👥 TSIT: <span class="blue" id="tsit"></span></span><br>
             <span>🔵 Last Status: <span class="blue" id="status"></span></span><br>
-            <span>✅ <a class="current" href="https://www.roblox.com/games/893973440/Flee-the-Facility">FTF</a> Updates: <span class="green" id="ftfupd"></span></span><br>
-            <span>✅ <a class="current" href="https://www.roblox.com/games/455327877/FTF-In-Dev">INDEV</a> Updates: <span class="green" id="indupd"></span></span><br>
+            <span>✅ <a class="current" id="main">MAIN</a> Updates: <span class="green" id="mainupd"></span></span><br>
+            <span>✅ <a class="current" id="test">TEST</a> Updates: <span class="green" id="testupd"></span></span><br>
             <span>❌ Read Errors: <span class="red" id="erd"></span></span><br>
             <span>❌ Fetch Errors: <span class="red" id="efd"></span></span><br>
             <span>❌ Message Errors: <span class="red" id="esm"></span></span><br>
@@ -98,7 +98,7 @@
         </div>
     </body>
     <script type="text/javascript">
-        const info = {testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), statusChecks: document.getElementById("statusChecks"), tsii: document.getElementById("tsii"), status: document.getElementById("status"), ftfupd: document.getElementById("ftfupd"), indupd: document.getElementById("indupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
+        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -127,6 +127,15 @@
         const bodyStatusClasses = ["offline", "online", "playing", "inStudio"];
         const containerStatusClasses = ["containerOffline", "containerOnline", "containerPlaying", "containerInStudio"];
         let status = 0;
+
+        $.ajax("/config", {
+            success: function(data) {
+                info.main.innerHTML = data.mainGame.name.toUpperCase();
+                info.main.href = "https://www.roblox.com/games/" + data.mainGame.placeId;
+                info.test.innerHTML = data.testGame.name.toUpperCase();
+                info.test.href = "https://www.roblox.com/games/" + data.testGame.placeId;
+            }
+        });
         function main() {
             const statusText = ['Offline', 'Online', 'Playing', 'In Studio', 'Invisible'];
             $.ajax("/info", {
@@ -138,10 +147,10 @@
                     info.testersChecks.innerHTML = data.checks.testers;
                     info.updatesChecks.innerHTML = data.checks.updates;
                     info.statusChecks.innerHTML = data.checks.status;
-                    info.tsii.innerHTML = data.tsii.length;
+                    info.tsit.innerHTML = data.tsit.length;
                     info.status.innerHTML = statusText[data.status];
-                    info.ftfupd.innerHTML = data.ftfupd;
-                    info.indupd.innerHTML = data.indupd;
+                    info.mainupd.innerHTML = data.mainupd;
+                    info.testupd.innerHTML = data.testupd;
                     info.erd.innerHTML = data.erd;
                     info.efd.innerHTML = data.efd;
                     info.esm.innerHTML = data.esm;
