@@ -26,7 +26,8 @@ export default {
         tcStatusId: "1264712451572891678",
         statusChannelId: "1288611969867317269",
         testerPing: "1273043382519861430",
-        statusPing: "1284206679822696559"
+        statusPing: "1284206679822696559",
+        topicsPing: "1290740866465398846"
     },
     port: 80
 };

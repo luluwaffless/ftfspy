@@ -75,13 +75,14 @@
     <body class="offline">
         <div id="container" class="containerOffline">
             <div class="links">
-                <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/lastupdated.json">last updated</a> <a class="other" href="/config">config</a><br><br>
+                <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/last.json">last</a> <a class="other" href="/config">config</a><br><br>
             </div>
             <div class="title">
                 <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
             </div><br>
             <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=testers'})">Testers</a> Checks: <span class="blue" id="testersChecks"></span></span><br>
             <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=updates'})">Updates</a> Checks: <span class="blue" id="updatesChecks"></span></span><br>
+            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=topics'})">Topics</a> Checks: <span class="blue" id="topicsChecks"></span></span><br>
             <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=status'})">Status</a> Checks: <span class="blue" id="statusChecks"></span></span><br>
             <span>👥 TSIT: <span class="blue" id="tsit"></span></span><br>
             <span>🔵 Last Status: <span class="blue" id="status"></span></span><br>
@@ -93,12 +94,13 @@
             <span class="small">⏱️ Runtime: <span id="runtime"></span></span><br>
             <span class="small">⌛ Next Testers Check: <span id="nextTestersCheck"></span></span><br>
             <span class="small">⌛ Next Updates Check: <span id="nextUpdatesCheck"></span></span><br>
+            <span class="small">⌛ Next Topics Check: <span id="nextTopicsCheck"></span></span><br>
             <span class="small">⌛ Next Status Check: <span id="nextStatusCheck"></span></span><br>
             <br>
         </div>
     </body>
     <script type="text/javascript">
-        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
+        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -142,10 +144,12 @@
                 success: function(data) {
                     const nextTestersCheck = new Date(data.nextChecks.testers).getTime();
                     const nextUpdatesCheck = new Date(data.nextChecks.updates).getTime();
+                    const nextTopicsCheck = new Date(data.nextChecks.topics).getTime();
                     const nextStatusCheck = new Date(data.nextChecks.status).getTime();
                     const runtimeDate = new Date(data.startTime).getTime();
                     info.testersChecks.innerHTML = data.checks.testers;
                     info.updatesChecks.innerHTML = data.checks.updates;
+                    info.topicsChecks.innerHTML = data.checks.topics;
                     info.statusChecks.innerHTML = data.checks.status;
                     info.tsit.innerHTML = data.tsit.length;
                     info.status.innerHTML = statusText[data.status];
@@ -157,6 +161,7 @@
                     info.runtime.innerHTML = timeSince(runtimeDate);
                     info.nextTestersCheck.innerHTML = timeUntil(nextTestersCheck);
                     info.nextUpdatesCheck.innerHTML = timeUntil(nextUpdatesCheck);
+                    info.nextTopicsCheck.innerHTML = timeUntil(nextTopicsCheck);
                     info.nextStatusCheck.innerHTML = timeUntil(nextStatusCheck);
                     if (status != data.status) {
                         status = data.status;

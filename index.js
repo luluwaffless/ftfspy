@@ -9,8 +9,8 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder } from "discord.j
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
-let lastUpdated = JSON.parse(fs.readFileSync("public/lastupdated.json", "utf8"));
-let sessionInfo = { checks: { testers: 0, updates: 0, status: 0 }, testupd: 0, mainupd: 0, erd: 0, efd: 0, esm: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", status: "" } };
+let last = JSON.parse(fs.readFileSync("public/last.json", "utf8"));
+let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -94,6 +94,9 @@ app.get("/check", async function (req, res) {
         await checkTesters(true);
     } else if (req.query.check == "updates") {
         await checkUpdates(true);
+    } else if (req.query.check == "topics") {
+        await checkTopics
+        (true);
     } else if (req.query.check == "status") {
         await checkStatus(true);
     };
@@ -164,10 +167,10 @@ async function checkUpdates(individual) {
     await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.mainGame.universeId}`, { "headers": { "accept": "application/json" } })
         .then(response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
-                if (response.data.data[0].updated != lastUpdated.main && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.main).getTime() + 1000)) {
-                    log(`✅ ${config.mainGame.name.toUpperCase()} updated. From ${lastUpdated.main} to ${response.data.data[0].updated}.`);
-                    lastUpdated.main = response.data.data[0].updated;
-                    fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
+                if (response.data.data[0].updated != last.updated.main && (new Date(response.data.data[0].updated).getTime() > new Date(last.updated.main).getTime() + 1000)) {
+                    log(`✅ ${config.mainGame.name.toUpperCase()} updated. From ${last.updated.main} to ${response.data.data[0].updated}.`);
+                    last.updated.main = response.data.data[0].updated;
+                    fs.writeFileSync("public/last.json", JSON.stringify(last));
                     sessionInfo.mainupd += 1;
                     axios.get(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${config.mainGame.universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`, { "headers": { "accept": "application/json" } })
                         .then(image => {
@@ -196,10 +199,10 @@ async function checkUpdates(individual) {
     await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.testGame.universeId}`, { "headers": { "accept": "application/json" } })
         .then(async response => {
             if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
-                if (response.data.data[0].updated != lastUpdated.test && (new Date(response.data.data[0].updated).getTime() > new Date(lastUpdated.test).getTime() + 1000)) {
-                    log(`✅ ${config.testGame.name.toUpperCase()} updated. From ${lastUpdated.test} to ${response.data.data[0].updated}.`);
-                    lastUpdated.test = response.data.data[0].updated;
-                    fs.writeFileSync("public/lastupdated.json", JSON.stringify(lastUpdated));
+                if (response.data.data[0].updated != last.updated.test && (new Date(response.data.data[0].updated).getTime() > new Date(last.updated.test).getTime() + 1000)) {
+                    log(`✅ ${config.testGame.name.toUpperCase()} updated. From ${last.updated.test} to ${response.data.data[0].updated}.`);
+                    last.updated.test = response.data.data[0].updated;
+                    fs.writeFileSync("public/last.json", JSON.stringify(last));
                     sessionInfo.testupd += 1;
                     send(`# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU @everyone\n-# há ${timeSince(response.data.data[0].updated)}`);
                 };
@@ -214,7 +217,33 @@ async function checkUpdates(individual) {
         });
     sessionInfo.checks.updates += 1;
     if (!individual) sessionInfo.nextChecks.updates = new Date(new Date().getTime() + 60000).toISOString();
-    await updateStatus(false);
+    await updateStatus();
+};
+async function checkTopics(individual) {
+    await axios.get(`https://devforum.roblox.com/topics/created-by/${config.leadDev.username.toLowerCase()}.json`)
+        .then(function (response) {
+            if (response.data["topic_list"] && response.data.topic_list["topics"]) {
+                response.data.topic_list.topics.forEach(function(topic) {
+                    if (!last.topics.includes(topic.id)) {
+                        last.topics.push(topic.id);
+                        log(`📰 New topic by ${config.leadDev.username}. https://devforum.roblox.com/t/${topic.slug}/${topic.id}`);
+                        fs.writeFileSync("public/last.json", JSON.stringify(last));
+                        sessionInfo.newTopics += 1;
+                        send(`\`📰\` novo tópico no devforum pelo ${config.leadDev.username}: https://devforum.roblox.com/t/${topic.slug}/${topic.id}\n-# há ${timeSince(topic.created_at)}\n-# ||<@&${config.discord.topicsPing}>||`);
+                    };
+                });
+            } else {
+                sessionInfo.erd += 1;
+                log("❌ Line 231: Error reading data: " + JSON.stringify(response.data));
+            }
+        })
+        .catch(function (error) {
+            sessionInfo.efd += 1;
+            log(`❌ Line 224: Error fetching data: ${error}`);
+        });
+    sessionInfo.checks.topics += 1;
+    if (!individual) sessionInfo.nextChecks.topics = new Date(new Date().getTime() + 60000).toISOString();
+    await updateStatus();
 };
 async function checkStatus(individual) {
     await axios.post("https://presence.roblox.com/v1/presence/users", { "userIds": [config.leadDev.userId] }, {
@@ -243,7 +272,7 @@ async function checkStatus(individual) {
         });
     sessionInfo.checks.status += 1;
     if (!individual) sessionInfo.nextChecks.status = new Date(new Date().getTime() + 30000).toISOString();
-    await updateStatus(false);
+    await updateStatus();
 };
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -258,10 +287,10 @@ async function updateStatus(goingOffline) {
         .setDescription(config.discord.description)
         .addFields(
             { "name": `desenvolvedores no ${config.testGame.name}`, "value": `\`👥\` ${sessionInfo.tsit.length}${sessionInfo.tsit.length > 0 ? " [(veja aqui)](https://discord.com/channels/1247404953073483877/1264712451572891678)" : ""}` },
-            { "name": "últimas atualizações", "value": `\`${config.testGame.name}\`  - <t:${Math.floor(new Date(lastUpdated.test).getTime() / 1000)}>\n\`${config.mainGame.name}\` - <t:${Math.floor(new Date(lastUpdated.main).getTime() / 1000)}>` },
+            { "name": "últimas atualizações", "value": `\`${config.testGame.name}\`  - <t:${Math.floor(new Date(last.updated.test).getTime() / 1000)}>\n\`${config.mainGame.name}\` - <t:${Math.floor(new Date(last.updated.main).getTime() / 1000)}>` },
             { "name": `status atual d${config.leadDev.preDisplay} ${config.leadDev.displayName}`, "value": `\`${statusEmoji[sessionInfo.status]}\` ${statusText[sessionInfo.status]}${sessionInfo.lastStatus >= 0 ? ` (<t:${Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000)}:R>)` : ""}` },
             { "name": `último status d${config.leadDev.preDisplay} ${config.leadDev.displayName}`, "value": sessionInfo.lastStatus >= 0 ? `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` : "`❔` nenhum" },
-            { "name": "próximas verificações", "value": `\`desenvolvedores no ${config.testGame.name}\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
+            { "name": "próximas verificações", "value": `\`desenvolvedores no ${config.testGame.name}\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`tópicos\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.topics).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
         )
         .setFooter({ text: "por luluwaffless" });
 
@@ -292,6 +321,7 @@ client.on('ready', async function () {
     });
     startUp(checkTesters, 120);
     startUp(checkUpdates, 60);
+    startUp(checkTopics, 60);
     startUp(checkStatus, 30);
     app.listen(config.port, function () {
         console.log("✅ http://localhost:" + config.port);
