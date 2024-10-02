@@ -229,7 +229,7 @@ async function checkTopics(individual) {
                         log(`📰 New topic by ${config.leadDev.username}. https://devforum.roblox.com/t/${topic.slug}/${topic.id}`);
                         fs.writeFileSync("public/last.json", JSON.stringify(last));
                         sessionInfo.newTopics += 1;
-                        send(`\`📰\` novo tópico no devforum pelo ${config.leadDev.username}: https://devforum.roblox.com/t/${topic.slug}/${topic.id}\n-# há ${timeSince(topic.created_at)}\n-# ||<@&${config.discord.topicsPing}>||`);
+                        send(`\`📰\` novo tópico no devforum pel${config.leadDev.preDisplay} ${config.leadDev.username}: https://devforum.roblox.com/t/${topic.slug}/${topic.id}\n-# há ${timeSince(topic.created_at)}\n-# ||<@&${config.discord.topicsPing}>||`);
                     };
                 });
             } else {
