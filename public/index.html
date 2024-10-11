@@ -4,13 +4,19 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=0.65">
         <title>ftfspy by luluwaffless</title>
+        <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
         <style type="text/css">
             body {
                 font-size: large;
                 text-align: center;
                 color: rgb(237, 237, 249);
-                font-family: 'Courier New', Courier, monospace;
+                font-family: monospace;
+            }
+            .emoji {
+                width: 1em;
+                height: 1em;
+                vertical-align: middle;
             }
             .offline {
                 background-color: hsl(0, 0%, 10%);
@@ -23,9 +29,6 @@
             }
             .inStudio {
                 background-color: rgb(77, 51, 25);
-            }
-            .links {
-                padding: 10px;
             }
             .other {
                 color: #808080;
@@ -40,6 +43,7 @@
                 position: absolute;
                 border-radius: 10px;
                 padding: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 box-shadow: 0px 0px 10px 5px rgba(10, 10, 20, 0.2);
             }
             .containerOffline {
@@ -63,44 +67,79 @@
             .red {
                 color: rgb(255, 128, 128);
             }
+            .yellow {
+                color: rgb(255, 255, 128);
+            }
             .small {
                 font-size: small; 
                 color: rgb(109, 109, 121); 
                 padding: 0; 
                 margin: 0;
             }
+            #grid-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-gap: 10px;
+                justify-items: stretch;
+            }
+            .item {
+                padding: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                background-color: hsl(0, 0%, 15%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                white-space: nowrap;
+            }
+            .list {
+                text-align: left;
+            }
+            .center-item {
+                grid-column: span 2;
+                justify-self: center;
+            }
         </style>
 	<link rel="icon" type="image/x-icon" href="icon.png">
     </head>
     <body class="offline">
         <div id="container" class="containerOffline">
-            <div class="links">
+            <div style="padding: 10px;">
                 <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/last.json">last</a> <a class="other" href="/config">config</a><br><br>
             </div>
             <div class="title">
                 <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
             </div><br>
-            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=testers'})">Testers</a> Checks: <span class="blue" id="testersChecks"></span></span><br>
-            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=updates'})">Updates</a> Checks: <span class="blue" id="updatesChecks"></span></span><br>
-            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=topics'})">Topics</a> Checks: <span class="blue" id="topicsChecks"></span></span><br>
-            <span>🔎 <a href="#" onclick="$.ajax({url:'/check?check=status'})">Status</a> Checks: <span class="blue" id="statusChecks"></span></span><br>
-            <span>👥 TSIT: <span class="blue" id="tsit"></span></span><br>
-            <span>🔵 Last Status: <span class="blue" id="status"></span></span><br>
-            <span>✅ <a class="current" id="main">MAIN</a> Updates: <span class="green" id="mainupd"></span></span><br>
-            <span>✅ <a class="current" id="test">TEST</a> Updates: <span class="green" id="testupd"></span></span><br>
-            <span>❌ Read Errors: <span class="red" id="erd"></span></span><br>
-            <span>❌ Fetch Errors: <span class="red" id="efd"></span></span><br>
-            <span>❌ Message Errors: <span class="red" id="esm"></span></span><br>
-            <span class="small">⏱️ Runtime: <span id="runtime"></span></span><br>
-            <span class="small">⌛ Next Testers Check: <span id="nextTestersCheck"></span></span><br>
-            <span class="small">⌛ Next Updates Check: <span id="nextUpdatesCheck"></span></span><br>
-            <span class="small">⌛ Next Topics Check: <span id="nextTopicsCheck"></span></span><br>
-            <span class="small">⌛ Next Status Check: <span id="nextStatusCheck"></span></span><br>
-            <br>
+            <div id="grid-container">
+                <div class="item">
+                    <span>👥 <a href="#" onclick="$.ajax({url:'/check?check=testers'})">Testers</a>:<div class="list"><br>🔎 Checks: <span class="blue" id="testersChecks"></span><br>👥 TSIT: <span class="green" id="tsit"></span><br>⌛ Next Check: <span id="nextTestersCheck" class="yellow"></span></div></span>
+                </div>
+                <div class="item">
+                    <span>✅ <a href="#" onclick="$.ajax({url:'/check?check=updates'})">Updates</a>:<div class="list"><br>🔎 Checks: <span class="blue" id="updatesChecks"></span><br>✅ <a class="current" id="main">MAIN</a>: <span class="green" id="mainupd"></span><br>✅ <a class="current" id="test">TEST</a>: <span class="green" id="testupd"></span><br>⌛ Next Check: <span id="nextUpdatesCheck" class="yellow"></span></div></span>
+                </div>
+                <div class="item">
+                    <span>📰 <a href="#" onclick="$.ajax({url:'/check?check=topics'})">Topics</a>:<div class="list"><br>🔎 Checks: <span class="blue" id="topicsChecks"></span><br><span>📰 New Topics: <span class="green" id="newTopics"></span></span><br>⌛ Next Check: <span id="nextTopicsCheck" class="yellow"></span></div></span>
+                </div>
+                <div class="item">
+                    <span>🔵 <a href="#" onclick="$.ajax({url:'/check?check=status'})">Status</a>:<div class="list"><br>🔎 Checks: <span class="blue" id="statusChecks"></span><br>🔵 Status: <span class="green" id="status"></span><br>⌛ Next Check: <span id="nextStatusCheck" class="yellow"></span></div></span>
+                </div>
+                <div class="item center-item">
+                    <span>❌ Errors:<div class="list"><br>📖 Read: <span class="red" id="erd"></span><br>🌐 Fetch: <span class="red" id="efd"></span><br>💬 Message: <span class="red" id="esm"></span></div></span>
+                </div>
+            </div>
+            <div style="padding: 10px;">
+                <span class="small" >⏱️ Runtime: <span id="runtime"></span></span>
+            </div>
         </div>
     </body>
     <script type="text/javascript">
-        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
+        twemoji.parse(
+            document.body,
+            { base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' }
+        );
+    </script>
+    <script type="text/javascript">
+        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -155,6 +194,7 @@
                     info.status.innerHTML = statusText[data.status];
                     info.mainupd.innerHTML = data.mainupd;
                     info.testupd.innerHTML = data.testupd;
+                    info.newTopics.innerHTML = data.newTopics;
                     info.erd.innerHTML = data.erd;
                     info.efd.innerHTML = data.efd;
                     info.esm.innerHTML = data.esm;
