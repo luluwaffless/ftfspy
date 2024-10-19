@@ -4,8 +4,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
 import sharp from "sharp";
-import FormData from "form-data";
-import { Client, GatewayIntentBits, ActivityType, EmbedBuilder } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder } from "discord.js";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
@@ -14,29 +13,12 @@ let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, te
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
-async function send(content, buffer) {
-    if (buffer) {
-        const form = new FormData();
-        form.append('file', buffer, {
-            filename: 'image.png',
-            contentType: 'image/png'
-        });
-        form.append('payload_json', JSON.stringify({
-            content: content
-        }));
-        return await axios.post(process.env.webhook, form, { headers: form.getHeaders() })
-            .catch((error) => {
-                sessionInfo.esm += 1;
-                log(`❌ Line 19: Error sending message: ${error}`);
-            });
-    } else {
-        return await axios.post(process.env.webhook, { "content": content }, { "headers": { 'Content-Type': 'application/json' } })
-            .catch((error) => {
-                sessionInfo.esm += 1;
-                log(`❌ Line 19: Error sending message: ${error}`);
-            });
-    }
-};
+let gameChannel;
+let devChannel;
+const send = async (c, m) => await c.send(m).catch((err) => {
+    sessionInfo.esm += 1;
+    log(`❌ Line 19: Error sending message: ${error}`);
+});
 function timeSince(isostr) {
     const timestamp = new Date(isostr).getTime();
     const now = new Date().getTime();
@@ -95,7 +77,7 @@ app.get("/check", async function (req, res) {
     } else if (req.query.check == "updates") {
         await checkUpdates(true);
     } else if (req.query.check == "topics") {
-        await checkTopics
+        await checkTopics(true);
         (true);
     } else if (req.query.check == "status") {
         await checkStatus(true);
@@ -110,7 +92,7 @@ async function checkTesters(individual) {
         .then(async instances => {
             if (instances.data["data"]) {
                 if (instances.data.data[0] && instances.data.data[0]["playerTokens"]) {
-                    if (instances.data.data[0].playerTokens.length < 2 && sessionInfo.tsit.length == 0) return;
+                    if (instances.data.data[0].playerTokens.length < 1 && sessionInfo.tsit.length == 0) return;
                     let changed = false;
                     let batchData = [];
                     let tokens = [];
@@ -135,7 +117,8 @@ async function checkTesters(individual) {
                                     let imageUrls = [];
                                     for (let batch of batches.data.data) imageUrls.push(batch.imageUrl);
                                     const combinedImageBuffer = await combineImages(imageUrls);
-                                    await send(`\`👥\` desenvolvedores vistos no [${config.testGame.displayName}](<https://www.roblox.com/games/${config.testGame.placeId}>):\n-# ||<@&${config.discord.testerPing}>||`, combinedImageBuffer);
+                                    const image = new AttachmentBuilder(combinedImageBuffer, { name: 'image.png' })
+                                    await send(gameChannel, {content: `\`👥\` desenvolvedores vistos no [${config.testGame.displayName}](<https://www.roblox.com/games/${config.testGame.placeId}>):\n-# ||<@&${config.discord.pings.testerPing}>||`, files: [image]});
                                 } else {
                                     sessionInfo.erd += 1;
                                     log("❌ Line 130: Error reading data: " + JSON.stringify(batches.data));
@@ -147,7 +130,7 @@ async function checkTesters(individual) {
                             });
                     };
                 } else if (sessionInfo.tsit.length > 0) {
-                    await send(`\`👥\` todos desenvolvedores vistos no [${config.testGame.displayName}](<https://www.roblox.com/games/${config.testGame.placeId}>) saíram\n-# ||<@&${config.discord.testerPing}>||`);
+                    await send(gameChannel, `\`👥\` todos desenvolvedores vistos no [${config.testGame.displayName}](<https://www.roblox.com/games/${config.testGame.placeId}>) saíram\n-# ||<@&${config.discord.pings.testerPing}>||`);
                     sessionInfo.tsit = [];
                 };
             } else {
@@ -175,11 +158,11 @@ async function checkUpdates(individual) {
                     axios.get(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${config.mainGame.universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`, { "headers": { "accept": "application/json" } })
                         .then(image => {
                             if (image.data["data"] && image.data.data[0] && image.data.data[0]["imageUrl"]) {
-                                send(`# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}`);
+                                send(gameChannel, `# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}\n -#||<@&${config.discord.pings.mainUpdPing}>||`);
                             } else {
                                 sessionInfo.erd += 1;
                                 log("❌ Line 183: Error reading data: " + JSON.stringify(image.data));
-                                send(`# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU @everyone\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}`);
+                                send(gameChannel, `# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}\n -#||<@&${config.discord.pings.mainUpdPing}>||`);
                             }
                         })
                         .catch(error => {
@@ -204,7 +187,7 @@ async function checkUpdates(individual) {
                     last.updated.test = response.data.data[0].updated;
                     fs.writeFileSync("public/last.json", JSON.stringify(last));
                     sessionInfo.testupd += 1;
-                    send(`# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU @everyone\n-# há ${timeSince(response.data.data[0].updated)}`);
+                    send(gameChannel, `# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU\n-# há ${timeSince(response.data.data[0].updated)}\n -#||<@&${config.discord.pings.testUpdPing}>||`);
                 };
             } else {
                 sessionInfo.erd += 1;
@@ -229,7 +212,7 @@ async function checkTopics(individual) {
                         log(`📰 New topic by ${config.leadDev.username}. https://devforum.roblox.com/t/${topic.slug}/${topic.id}`);
                         fs.writeFileSync("public/last.json", JSON.stringify(last));
                         sessionInfo.newTopics += 1;
-                        send(`\`📰\` novo tópico no devforum pel${config.leadDev.preDisplay} ${config.leadDev.username}: https://devforum.roblox.com/t/${topic.slug}/${topic.id}\n-# há ${timeSince(topic.created_at)}\n-# ||<@&${config.discord.topicsPing}>||`);
+                        send(devChannel, `\`📰\` novo tópico no devforum pel${config.leadDev.preDisplay} ${config.leadDev.username}: https://devforum.roblox.com/t/${topic.slug}/${topic.id}\n-# há ${timeSince(topic.created_at)}\n-# ||<@&${config.discord.pings.topicsPing}>||`);
                     };
                 });
             } else {
@@ -258,7 +241,7 @@ async function checkStatus(individual) {
                     log(`🔎 ${config.leadDev.username}'s status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
                     sessionInfo.lastStatus = sessionInfo.status;
                     sessionInfo.status = response.data.userPresences[0].userPresenceType;
-                    send(`\`${statusEmoji[sessionInfo.status]}\` ${config.leadDev.preDisplay} [${config.leadDev.displayName}](<https://www.roblox.com/users/${config.leadDev.userId}>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&${config.discord.statusPing}>||`);
+                    send(devChannel, `\`${statusEmoji[sessionInfo.status]}\` ${config.leadDev.preDisplay} [${config.leadDev.displayName}](<https://www.roblox.com/users/${config.leadDev.userId}>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&${response.data.userPresences[0].userPresenceType == 3 ? config.discord.pings.studioPing : config.discord.pings.statusPing}>||`);
                     sessionInfo.lastStatusBegin = new Date().toISOString();
                 };
             } else {
@@ -295,7 +278,7 @@ async function updateStatus(goingOffline) {
         .setFooter({ text: "por luluwaffless" });
 
     if (!statusMessage) {
-        const statusChannel = await client.channels.fetch(config.discord.statusChannelId);
+        const statusChannel = await client.channels.fetch(config.discord.channels.statusId);
         await statusChannel.send({ embeds: [embed] })
             .then(message => {
                 statusMessage = message;
@@ -308,9 +291,9 @@ async function updateStatus(goingOffline) {
 const startUp = (f, t) => { f(); setInterval(f, t * 1000); };
 const changeName = (n, c) => { if (c.name != n) return c.setName(n); };
 client.on('ready', async function () {
-    const tc = await client.channels.fetch(config.discord.tcStatusId);
+    gameChannel = await client.channels.fetch(config.discord.channels.gameUpdatesId);
+    devChannel = await client.channels.fetch(config.discord.channels.devUpdatesId);
     const vc = await client.channels.fetch(config.discord.vcStatusId);
-    await changeName("🟢︱" + config.discord.name, tc);
     await changeName("bot: online 🟢", vc);
     client.user.setPresence({
         activities: [{
@@ -330,7 +313,6 @@ client.on('ready', async function () {
     for (let evt of ['SIGTERM', 'SIGINT', 'SIGHUP']) {
         process.on(evt, async function () {
             process.stdin.resume();
-            await changeName("🔴︱" + config.discord.name, tc);
             await changeName("bot: offline 🔴", vc);
             await updateStatus(true);
             await log("🔴 Offline");
