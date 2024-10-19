@@ -293,7 +293,7 @@ const changeName = (n, c) => { if (c.name != n) return c.setName(n); };
 client.on('ready', async function () {
     gameChannel = await client.channels.fetch(config.discord.channels.gameUpdatesId);
     devChannel = await client.channels.fetch(config.discord.channels.devUpdatesId);
-    const vc = await client.channels.fetch(config.discord.vcStatusId);
+    const vc = await client.channels.fetch(config.discord.channels.vcStatusId);
     await changeName("bot: online 🟢", vc);
     client.user.setPresence({
         activities: [{
