@@ -92,7 +92,7 @@ async function checkTesters(individual) {
         .then(async instances => {
             if (instances.data["data"]) {
                 if (instances.data.data[0] && instances.data.data[0]["playerTokens"]) {
-                    if (instances.data.data[0].playerTokens.length < 1 && sessionInfo.tsit.length == 0) return;
+                    if (instances.data.data[0].playerTokens.length < 2 && sessionInfo.tsit.length == 0) return;
                     let changed = false;
                     let batchData = [];
                     let tokens = [];
