@@ -4,12 +4,12 @@ import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
 import sharp from "sharp";
-import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
 let last = JSON.parse(fs.readFileSync("public/last.json", "utf8"));
-let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
+let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -232,16 +232,31 @@ async function checkStatus(individual) {
     await axios.post("https://presence.roblox.com/v1/presence/users", { "userIds": [config.leadDev.userId] }, {
         headers: {
             "accept": "application/json",
-            "Content-Type": "application/json"
-        }
+            "Content-Type": "application/json",
+            "Cookie": process.env.cookie
+        }, withCredentials: true
     })
         .then(function (response) {
             if (response.data["userPresences"] && response.data.userPresences[0] && !isNaN(response.data.userPresences[0]["userPresenceType"])) {
-                if (sessionInfo.status != response.data.userPresences[0].userPresenceType) {
+                if (sessionInfo.status != response.data.userPresences[0].userPresenceType || sessionInfo.gameId != response.data.userPresences[0].gameId) {
                     log(`🔎 ${config.leadDev.username}'s status changed from ${sessionInfo.status} to ${response.data.userPresences[0].userPresenceType}`);
                     sessionInfo.lastStatus = sessionInfo.status;
                     sessionInfo.status = response.data.userPresences[0].userPresenceType;
-                    send(devChannel, `\`${statusEmoji[sessionInfo.status]}\` ${config.leadDev.preDisplay} [${config.leadDev.displayName}](<https://www.roblox.com/users/${config.leadDev.userId}>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&${response.data.userPresences[0].userPresenceType == 3 ? config.discord.pings.studioPing : config.discord.pings.statusPing}>||`);
+                    sessionInfo.placeId = response.data.userPresences[0].placeId;
+                    sessionInfo.gameId = response.data.userPresences[0].gameId;
+                    if (response.data.userPresences[0].userPresenceType === 2 && response.data.userPresences[0].placeId && response.data.userPresences[0].gameId) {
+                        const button = new ButtonBuilder()
+                            .setLabel('entrar')
+                            .setURL(`https://deepblox.onrender.com/experiences/start?placeId=${response.data.userPresences[0].placeId}&gameInstanceId=${response.data.userPresences[0].gameId}`)
+                            .setStyle(ButtonStyle.Link);
+                        const row = new ActionRowBuilder()
+                            .addComponents(button);
+                        send(devChannel, {
+                            content: `\`🟢\` ${config.leadDev.preDisplay} [${config.leadDev.displayName}](<https://www.roblox.com/users/${config.leadDev.userId}>) está jogando [${response.data.userPresences[0].lastLocation}](https://www.roblox.com/games/${response.data.userPresences[0].placeId})${sessionInfo.lastStatus > 0 ? `\n-# ficou ${sessionInfo.lastStatus == 2 ? `jogando ${sessionInfo.lastLocation}` : statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&${config.discord.pings.statusPing}>||`,
+                            components: [row]
+                        });
+                    } else send(devChannel, `\`${statusEmoji[sessionInfo.status]}\` ${config.leadDev.preDisplay} [${config.leadDev.displayName}](<https://www.roblox.com/users/${config.leadDev.userId}>) está ${statusText[sessionInfo.status]}${sessionInfo.lastStatus > 0 ? `\n-# ficou ${sessionInfo.lastStatus == 2 ? `jogando ${sessionInfo.lastLocation}` : statusText[sessionInfo.lastStatus]} por ${timeSince(sessionInfo.lastStatusBegin)}` : ""}\n-# ||<@&${response.data.userPresences[0].userPresenceType == 3 ? config.discord.pings.studioPing : config.discord.pings.statusPing}>||`);
+                    sessionInfo.lastLocation = response.data.userPresences[0].lastLocation;
                     sessionInfo.lastStatusBegin = new Date().toISOString();
                 };
             } else {
