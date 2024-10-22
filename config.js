@@ -1,4 +1,6 @@
 export default {
+    port: 80,
+    checkBotUpdates: true,
     mainGame: {
         universeId: 372226183,
         placeId: 893973440,
@@ -21,7 +23,7 @@ export default {
         status: "MrWindy 🎃",
         name: "ftfspy",
         displayName: "ftf spy :3",
-        description: "stalkeadores de marretão",
+        description: "por luluwaffless",
         channels: {
             vcStatusId: "1283187128469295176",
             gameUpdatesId: "1264712451572891678",
@@ -36,6 +38,5 @@ export default {
             statusPing: "1284206679822696559",
             topicsPing: "1290740866465398846"
         }
-    },
-    port: 80
+    }
 };

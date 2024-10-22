@@ -8,6 +8,8 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
+const version = fs.readFileSync("version", "utf8");
+let updateNeeded = false;
 let last = JSON.parse(fs.readFileSync("public/last.json", "utf8"));
 let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, ce: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
 async function log(data) {
@@ -15,9 +17,9 @@ async function log(data) {
 };
 let gameChannel;
 let devChannel;
-const send = async (c, m) => await c.send(m).catch((err) => {
+const send = async (c, m) => await c.send(m).then((msg) => { msg.crosspost(); }).catch((err) => {
     sessionInfo.esm += 1;
-    log(`❌ Error sending message: ${error}`);
+    log(`❌ Error sending message: ${err.message}, ${err.stack || 'no stack trace available'}`);
 });
 function timeSince(isostr) {
     const timestamp = new Date(isostr).getTime();
@@ -65,6 +67,9 @@ async function combineImages(imageUrls) {
     }))).png().toBuffer();
     return combinedImageBuffer;
 };
+app.get("/version", (_, res) => {
+    res.json({version: version, updateNeeded: updateNeeded});
+});
 app.get("/info", (_, res) => {
     res.json(sessionInfo);
 });
@@ -291,7 +296,7 @@ async function updateStatus(goingOffline) {
             { "name": `último status d${config.leadDev.preDisplay} ${config.leadDev.displayName}`, "value": sessionInfo.lastStatus >= 0 ? `\`${statusEmoji[sessionInfo.lastStatus]}\` ${statusText[sessionInfo.lastStatus]}` : "`❔` nenhum" },
             { "name": "próximas verificações", "value": `\`desenvolvedores no ${config.testGame.name}\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000)}:R>\n\`atualizações\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000)}:R>\n\`tópicos\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.topics).getTime() / 1000)}:R>\n\`status\`: <t:${Math.floor(new Date(sessionInfo.nextChecks.status).getTime() / 1000)}:R>` }
         )
-        .setFooter({ text: "por luluwaffless" });
+        .setFooter({ text: `v${version}` });
 
     if (!statusMessage) {
         const statusChannel = await client.channels.fetch(config.discord.channels.statusId);
@@ -305,6 +310,22 @@ async function updateStatus(goingOffline) {
     };
     updating = false;
 };
+
+async function checkBotUpdates() {
+    if (updateNeeded) return;
+    await axios.get("https://raw.githubusercontent.com/luluwaffless/ftfspy/refs/heads/main/version")
+        .then(function(response) {
+            if (response.data != version) {
+                updateNeeded = true;
+                console.log(`⚠️ New version v${response.data.version}! Please update by using "git pull".`);
+            };
+        })
+        .catch(function (error) {
+            sessionInfo.efd += 1;
+            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+        });
+};
+
 const startUp = (f, t) => { f(); setInterval(f, t * 1000); };
 const changeName = (n, c) => { if (c.name != n) return c.setName(n); };
 client.on('ready', async function () {
@@ -319,6 +340,7 @@ client.on('ready', async function () {
         }],
         status: 'online'
     });
+    if (config.checkBotUpdates) startUp(checkBotUpdates, 300);
     startUp(checkTesters, 120);
     startUp(checkUpdates, 60);
     startUp(checkTopics, 60);
