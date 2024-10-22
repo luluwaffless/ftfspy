@@ -124,7 +124,7 @@
                     <span>🔵 <a href="#" onclick="$.ajax({url:'/check?check=status'})">Status</a>:<div class="list"><br>🔎 Checks: <span class="blue" id="statusChecks"></span><br>🔵 Status: <span class="green" id="status"></span><br>⌛ Next Check: <span id="nextStatusCheck" class="yellow"></span></div></span>
                 </div>
                 <div class="item center-item">
-                    <span>❌ Errors:<div class="list"><br>📖 Read: <span class="red" id="erd"></span><br>🌐 Fetch: <span class="red" id="efd"></span><br>💬 Message: <span class="red" id="esm"></span></div></span>
+                    <span>❌ Errors:<div class="list"><br>📖 Read: <span class="red" id="erd"></span><br>🌐 Fetch: <span class="red" id="efd"></span><br>💬 Message: <span class="red" id="esm"></span><br>📜 Code: <span class="red" id="ce"></span></div></span>
                 </div>
             </div>
             <div style="padding: 10px;">
@@ -139,7 +139,7 @@
         );
     </script>
     <script type="text/javascript">
-        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
+        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), ce: document.getElementById("ce"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -198,6 +198,7 @@
                     info.erd.innerHTML = data.erd;
                     info.efd.innerHTML = data.efd;
                     info.esm.innerHTML = data.esm;
+                    info.ce.innerHTML = data.ce;
                     info.runtime.innerHTML = timeSince(runtimeDate);
                     info.nextTestersCheck.innerHTML = timeUntil(nextTestersCheck);
                     info.nextUpdatesCheck.innerHTML = timeUntil(nextUpdatesCheck);
