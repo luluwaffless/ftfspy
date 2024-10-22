@@ -317,7 +317,7 @@ async function checkBotUpdates() {
         .then(function(response) {
             if (response.data != version) {
                 updateNeeded = true;
-                console.log(`⚠️ New version v${response.data.version}! Please update by using "git pull".`);
+                console.log(`⚠️ New version v${response.data}! Please update by using "git pull".`);
             };
         })
         .catch(function (error) {
