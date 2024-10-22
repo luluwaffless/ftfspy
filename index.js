@@ -282,6 +282,7 @@ async function updateStatus(goingOffline) {
     const embed = new EmbedBuilder()
         .setColor(goingOffline ? 0xff0000 : 0x00ff00)
         .setTitle(config.discord.displayName)
+        .setURL("https://discord.gg/6SMbZn7KtW")
         .setDescription(config.discord.description)
         .addFields(
             { "name": `desenvolvedores no ${config.testGame.name}`, "value": `\`👥\` ${sessionInfo.tsit.length}${sessionInfo.tsit.length > 0 ? " [(veja aqui)](https://discord.com/channels/1247404953073483877/1264712451572891678)" : ""}` },
