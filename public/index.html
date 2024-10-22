@@ -108,7 +108,7 @@
                 <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/last.json">last</a> <a class="other" href="/config">config</a><br><br>
             </div>
             <div class="title">
-                <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span>
+                <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span><br><span style="font-size: small; color: #808080;">v<span id="version"></span></span>
             </div><br>
             <div id="grid-container">
                 <div class="item">
@@ -139,7 +139,7 @@
         );
     </script>
     <script type="text/javascript">
-        const info = {main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), ce: document.getElementById("ce"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
+        const info = {version: document.getElementById("version"), main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), ce: document.getElementById("ce"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
             const diff = now - timestamp;
@@ -175,6 +175,11 @@
                 info.main.href = "https://www.roblox.com/games/" + data.mainGame.placeId;
                 info.test.innerHTML = data.testGame.name.toUpperCase();
                 info.test.href = "https://www.roblox.com/games/" + data.testGame.placeId;
+            }
+        });
+        $.ajax("/version", {
+            success: function(data) {
+                info.version.innerHTML = `${data.version} ${data.updateNeeded ? "⚠️" : ""}`
             }
         });
         function main() {
