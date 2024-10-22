@@ -295,6 +295,7 @@ async function updateStatus(goingOffline) {
 
     if (!statusMessage) {
         const statusChannel = await client.channels.fetch(config.discord.channels.statusId);
+        await statusChannel.bulkDelete(await statusChannel.messages.fetch({ limit: 100 }));
         await statusChannel.send({ embeds: [embed] })
             .then(message => {
                 statusMessage = message;
