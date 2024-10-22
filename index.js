@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 app.use(express.static("public"));
 let last = JSON.parse(fs.readFileSync("public/last.json", "utf8"));
-let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
+let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, ce: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
 async function log(data) {
     return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
@@ -17,7 +17,7 @@ let gameChannel;
 let devChannel;
 const send = async (c, m) => await c.send(m).catch((err) => {
     sessionInfo.esm += 1;
-    log(`❌ Line 19: Error sending message: ${error}`);
+    log(`❌ Error sending message: ${error}`);
 });
 function timeSince(isostr) {
     const timestamp = new Date(isostr).getTime();
@@ -126,7 +126,7 @@ async function checkTesters(individual) {
                             })
                             .catch(error => {
                                 sessionInfo.efd += 1;
-                                log("❌ Line 135: Error fetching data: " + error);
+                                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
                             });
                     };
                 } else if (sessionInfo.tsit.length > 0) {
@@ -140,7 +140,7 @@ async function checkTesters(individual) {
         })
         .catch(error => {
             sessionInfo.efd += 1;
-            log("❌ Line 156: Error fetching data: " + error);
+            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
         });
     sessionInfo.checks.testers += 1;
     if (!individual) sessionInfo.nextChecks.testers = new Date(new Date().getTime() + 120000).toISOString();
@@ -167,7 +167,7 @@ async function checkUpdates(individual) {
                         })
                         .catch(error => {
                             sessionInfo.efd += 1;
-                            log("❌ Line 189: Error fetching data: " + error)
+                            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`)
                         });
                 };
             } else {
@@ -177,7 +177,7 @@ async function checkUpdates(individual) {
         })
         .catch(error => {
             sessionInfo.efd += 1;
-            log("❌ Line 199: Error fetching data: " + error)
+            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`)
         });
     await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.testGame.universeId}`, { "headers": { "accept": "application/json" } })
         .then(async response => {
@@ -196,7 +196,7 @@ async function checkUpdates(individual) {
         })
         .catch(error => {
             sessionInfo.efd += 1;
-            log("❌ Line 166: Error fetching data: " + error);
+            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
         });
     sessionInfo.checks.updates += 1;
     if (!individual) sessionInfo.nextChecks.updates = new Date(new Date().getTime() + 60000).toISOString();
@@ -222,7 +222,7 @@ async function checkTopics(individual) {
         })
         .catch(function (error) {
             sessionInfo.efd += 1;
-            log(`❌ Line 224: Error fetching data: ${error}`);
+            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
         });
     sessionInfo.checks.topics += 1;
     if (!individual) sessionInfo.nextChecks.topics = new Date(new Date().getTime() + 60000).toISOString();
@@ -266,7 +266,7 @@ async function checkStatus(individual) {
         })
         .catch(function (error) {
             sessionInfo.efd += 1;
-            log(`❌ Line 219: Error fetching data: ${error}`);
+            log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
         });
     sessionInfo.checks.status += 1;
     if (!individual) sessionInfo.nextChecks.status = new Date(new Date().getTime() + 30000).toISOString();
@@ -336,5 +336,14 @@ client.on('ready', async function () {
             process.exit();
         });
     };
+    process.on('unhandledRejection', (reason, promise) => {
+        sessionInfo.ce += 1;
+        log(`❌ Unhandled Rejection at ${promise}: ${reason} (${reason.message || 'no message'}, ${reason.stack || 'no stack'})`);
+    });
+      
+    process.on('uncaughtException', (err) => {
+        sessionInfo.ce += 1;
+        log(`❌ Uncaught Exception: ${err.message}, ${err.stack}`);
+    });
 });
 client.login(process.env.token);
