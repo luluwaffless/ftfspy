@@ -158,11 +158,11 @@ async function checkUpdates(individual) {
                     axios.get(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${config.mainGame.universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`, { "headers": { "accept": "application/json" } })
                         .then(image => {
                             if (image.data["data"] && image.data.data[0] && image.data.data[0]["imageUrl"]) {
-                                send(gameChannel, `# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}\n -# ||<@&${config.discord.pings.mainUpdPing}>||`);
+                                send(gameChannel, `# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU\n\`\`\`\n${response.data.data[0].description}\n\`\`\`\n[imagem](${image.data.data[0].imageUrl})\n-# há ${timeSince(response.data.data[0].updated)}\n-# ||<@&${config.discord.pings.mainUpdPing}>||`);
                             } else {
                                 sessionInfo.erd += 1;
                                 log("❌ Line 183: Error reading data: " + JSON.stringify(image.data));
-                                send(gameChannel, `# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}\n -# ||<@&${config.discord.pings.mainUpdPing}>||`);
+                                send(gameChannel, `# \`🚨\` [${config.mainGame.displayName.toUpperCase()}](https://www.roblox.com/games/${config.mainGame.placeId}) ATUALIZOU\n\`\`\`\n${response.data.data[0].description}\n-# há ${timeSince(response.data.data[0].updated)}\n-# ||<@&${config.discord.pings.mainUpdPing}>||`);
                             }
                         })
                         .catch(error => {
@@ -187,7 +187,7 @@ async function checkUpdates(individual) {
                     last.updated.test = response.data.data[0].updated;
                     fs.writeFileSync("public/last.json", JSON.stringify(last));
                     sessionInfo.testupd += 1;
-                    send(gameChannel, `# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU\n-# há ${timeSince(response.data.data[0].updated)}\n -# ||<@&${config.discord.pings.testUpdPing}>||`);
+                    send(gameChannel, `# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU\n-# há ${timeSince(response.data.data[0].updated)}\n-# ||<@&${config.discord.pings.testUpdPing}>||`);
                 };
             } else {
                 sessionInfo.erd += 1;
