@@ -315,9 +315,9 @@ async function checkBotUpdates() {
     if (updateNeeded) return;
     await axios.get("https://raw.githubusercontent.com/luluwaffless/ftfspy/refs/heads/main/version")
         .then(function(response) {
-            if (response.data != version) {
+            if (response.data.trim() != version.trim()) {
                 updateNeeded = true;
-                console.log(`⚠️  New version v${response.data}! Please update by using "git pull".`);
+                console.log(`⚠️ New version v${response.data.trim()}! Please update by using "git pull".`); // if this doesn't work istg im gonna freak out
             };
         })
         .catch(function (error) {
