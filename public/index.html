@@ -133,12 +133,6 @@
         </div>
     </body>
     <script type="text/javascript">
-        twemoji.parse(
-            document.body,
-            { base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' }
-        );
-    </script>
-    <script type="text/javascript">
         const info = {version: document.getElementById("version"), main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), ce: document.getElementById("ce"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
         function timeSince(timestamp) {
             const now = new Date().getTime();
@@ -219,5 +213,11 @@
             setTimeout(main, 1000);
         };
         main();
+    </script>
+    <script type="text/javascript">
+        twemoji.parse(
+            document.body,
+            { base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' }
+        );
     </script>
 </html>
