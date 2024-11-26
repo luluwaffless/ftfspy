@@ -1,5 +1,5 @@
 export default {
-    port: 80,
+    port: 3000,
     checkBotUpdates: true,
     mainGame: {
         universeId: 372226183,
@@ -20,7 +20,7 @@ export default {
         preDisplay: "o"
     },
     discord: {
-        status: "MrWindy 🎃",
+        status: "MrWindy 🎄",
         name: "ftfspy",
         displayName: "ftf spy :3",
         description: "por luluwaffless",
