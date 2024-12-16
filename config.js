@@ -1,6 +1,7 @@
 export default {
     port: 3000,
     checkBotUpdates: true,
+    advertise: true,
     mainGame: {
         universeId: 372226183,
         placeId: 893973440,
@@ -25,6 +26,7 @@ export default {
         displayName: "ftf spy :3",
         description: "por luluwaffless",
         channels: {
+            advertiseId: "1316488085025980587",
             vcStatusId: "1283187128469295176",
             gameUpdatesId: "1264712451572891678",
             devUpdatesId: "1295882089992028241",

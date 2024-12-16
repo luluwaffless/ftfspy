@@ -311,6 +311,13 @@ async function updateStatus(goingOffline) {
     updating = false;
 };
 
+const advertisement = fs.readFileSync("advertisement.txt");
+async function advertise() {
+    const advertiseChannel = await client.channels.fetch(config.discord.channels.advertiseId);
+    await advertiseChannel.bulkDelete(await advertiseChannel.messages.fetch({ limit: 100 }));
+    await advertiseChannel.send({content: advertisement})
+};
+
 async function checkBotUpdates() {
     if (updateNeeded) return;
     await axios.get("https://raw.githubusercontent.com/luluwaffless/ftfspy/refs/heads/main/version")
@@ -341,6 +348,7 @@ client.on('ready', async function () {
         status: 'online'
     });
     if (config.checkBotUpdates) startUp(checkBotUpdates, 300);
+    if (config.advertise) startUp(advertise, 86400);
     startUp(checkTesters, 120);
     startUp(checkUpdates, 60);
     startUp(checkTopics, 60);
