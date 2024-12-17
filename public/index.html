@@ -6,106 +6,13 @@
         <title>ftfspy by luluwaffless</title>
         <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-        <style type="text/css">
-            body {
-                font-size: large;
-                text-align: center;
-                color: rgb(237, 237, 249);
-                font-family: monospace;
-            }
-            .emoji {
-                width: 1em;
-                height: 1em;
-                vertical-align: middle;
-            }
-            .offline {
-                background-color: hsl(0, 0%, 10%);
-            }
-            .online {
-                background-color: rgb(25, 25, 77);
-            }
-            .playing {
-                background-color: rgb(25, 77, 25);
-            }
-            .inStudio {
-                background-color: rgb(77, 51, 25);
-            }
-            .other {
-                color: #808080;
-            }
-            a {
-                color: #ffffff;
-            }
-            #container {
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                position: absolute;
-                border-radius: 10px;
-                padding: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                box-shadow: 0px 0px 10px 5px rgba(10, 10, 20, 0.2);
-            }
-            .containerOffline {
-                background-color: rgb(38, 38, 39);
-            }
-            .containerOnline {
-                background-color: rgb(32, 32, 96);
-            }
-            .containerPlaying {
-                background-color: rgb(29, 86, 29);
-            }
-            .containerInStudio {
-                background-color: rgb(86, 57, 29);
-            }
-            .blue {
-                color: rgb(128, 128, 255);
-            }
-            .green {
-                color: rgb(128, 255, 128);
-            }
-            .red {
-                color: rgb(255, 128, 128);
-            }
-            .yellow {
-                color: rgb(255, 255, 128);
-            }
-            .small {
-                font-size: small; 
-                color: rgb(109, 109, 121); 
-                padding: 0; 
-                margin: 0;
-            }
-            #grid-container {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                grid-gap: 10px;
-                justify-items: stretch;
-            }
-            .item {
-                padding: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 10px;
-                background-color: hsl(0, 0%, 15%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                white-space: nowrap;
-            }
-            .list {
-                text-align: left;
-            }
-            .center-item {
-                grid-column: span 2;
-                justify-self: center;
-            }
-        </style>
-	<link rel="icon" type="image/x-icon" href="icon.png">
+        <link rel="stylesheet" href="styles/index.css">
+	    <link rel="icon" type="image/x-icon" href="images/icon.png">
     </head>
     <body class="offline">
         <div id="container" class="containerOffline">
-            <div style="padding: 10px;">
-                <a href="#">home</a> <a class="other" href="/logs.txt">logs</a> <a class="other" href="/last.json">last</a> <a class="other" href="/config">config</a><br><br>
+            <nav style="padding: 10px;">
+                <a href="#">home</a> <a class="other" href="/logs">logs</a> <a class="other" href="/last">last</a> <a class="other" href="/config">config</a><br><br>
             </div>
             <div class="title">
                 <span style="font-weight: bolder; font-size: xx-large; color: #ffffff;">ftfspy</span><br><span style="font-size: small; color: #808080;">by luluwaffless</span><br><span style="font-size: small; color: #808080;">v<span id="version"></span></span>
@@ -126,95 +33,14 @@
                 <div class="item center-item">
                     <span>❌ Errors:<div class="list"><br>📖 Read: <span class="red" id="erd"></span><br>🌐 Fetch: <span class="red" id="efd"></span><br>💬 Message: <span class="red" id="esm"></span><br>📜 Code: <span class="red" id="ce"></span></div></span>
                 </div>
-            </div>
+            </div><br>
             <a href="#" id="advertise" onclick="$.ajax('/advertise')">💰 Advertise</a>
             <div style="padding: 10px;">
                 <span class="small" >⏱️ Runtime: <span id="runtime"></span></span>
             </div>
         </div>
+        <script type="text/javascript" src="scripts/index.js"></script>
     </body>
-    <script type="text/javascript">
-        const info = {version: document.getElementById("version"), main: document.getElementById("main"), test: document.getElementById("test"), testersChecks: document.getElementById("testersChecks"), updatesChecks: document.getElementById("updatesChecks"), topicsChecks: document.getElementById("topicsChecks"), statusChecks: document.getElementById("statusChecks"), tsit: document.getElementById("tsit"), status: document.getElementById("status"), mainupd: document.getElementById("mainupd"), testupd: document.getElementById("testupd"), newTopics: document.getElementById("newTopics"), erd: document.getElementById("erd"), efd: document.getElementById("efd"), esm: document.getElementById("esm"), ce: document.getElementById("ce"), runtime: document.getElementById("runtime"), nextTestersCheck: document.getElementById("nextTestersCheck"), nextUpdatesCheck: document.getElementById("nextUpdatesCheck"), nextTopicsCheck: document.getElementById("nextTopicsCheck"), nextStatusCheck: document.getElementById("nextStatusCheck")};
-        function timeSince(timestamp) {
-            const now = new Date().getTime();
-            const diff = now - timestamp;
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            let parts = [];
-            if (hours) parts.push(hours);
-            if (minutes || hours) parts.push(minutes.toString().padStart(hours ? 2 : 1, '0'));
-            parts.push(seconds.toString().padStart(minutes || hours ? 2 : 1, '0'));
-            return parts.join(':');
-        };
-        function timeUntil(timestamp) {
-            const now = new Date().getTime();
-            const diff = timestamp - now;
-            if (diff < 1000) return 'checking...'; 
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            let parts = [];
-            if (hours) parts.push(hours);
-            if (minutes || hours) parts.push(minutes.toString().padStart(hours ? 2 : 1, '0'));
-            parts.push(seconds.toString().padStart(minutes || hours ? 2 : 1, '0'));
-            return parts.join(':');
-        };
-        const bodyStatusClasses = ["offline", "online", "playing", "inStudio"];
-        const containerStatusClasses = ["containerOffline", "containerOnline", "containerPlaying", "containerInStudio"];
-        let status = 0;
-
-        $.ajax("/config", {
-            success: function(data) {
-                info.main.innerHTML = data.mainGame.name.toUpperCase();
-                info.main.href = "https://www.roblox.com/games/" + data.mainGame.placeId;
-                info.test.innerHTML = data.testGame.name.toUpperCase();
-                info.test.href = "https://www.roblox.com/games/" + data.testGame.placeId;
-            }
-        });
-        $.ajax("/version", {
-            success: function(data) {
-                info.version.innerHTML = `${data.version} ${data.updateNeeded ? "⚠️" : ""}`
-            }
-        });
-        function main() {
-            const statusText = ['Offline', 'Online', 'Playing', 'In Studio', 'Invisible'];
-            $.ajax("/info", {
-                success: function(data) {
-                    const nextTestersCheck = new Date(data.nextChecks.testers).getTime();
-                    const nextUpdatesCheck = new Date(data.nextChecks.updates).getTime();
-                    const nextTopicsCheck = new Date(data.nextChecks.topics).getTime();
-                    const nextStatusCheck = new Date(data.nextChecks.status).getTime();
-                    const runtimeDate = new Date(data.startTime).getTime();
-                    info.testersChecks.innerHTML = data.checks.testers;
-                    info.updatesChecks.innerHTML = data.checks.updates;
-                    info.topicsChecks.innerHTML = data.checks.topics;
-                    info.statusChecks.innerHTML = data.checks.status;
-                    info.tsit.innerHTML = data.tsit.length;
-                    info.status.innerHTML = statusText[data.status];
-                    info.mainupd.innerHTML = data.mainupd;
-                    info.testupd.innerHTML = data.testupd;
-                    info.newTopics.innerHTML = data.newTopics;
-                    info.erd.innerHTML = data.erd;
-                    info.efd.innerHTML = data.efd;
-                    info.esm.innerHTML = data.esm;
-                    info.ce.innerHTML = data.ce;
-                    info.runtime.innerHTML = timeSince(runtimeDate);
-                    info.nextTestersCheck.innerHTML = timeUntil(nextTestersCheck);
-                    info.nextUpdatesCheck.innerHTML = timeUntil(nextUpdatesCheck);
-                    info.nextTopicsCheck.innerHTML = timeUntil(nextTopicsCheck);
-                    info.nextStatusCheck.innerHTML = timeUntil(nextStatusCheck);
-                    if (status != data.status) {
-                        status = data.status;
-                        document.body.className = bodyStatusClasses[status];
-                        document.getElementById("container").className = containerStatusClasses[status];
-                    };
-                }
-            });
-            setTimeout(main, 1000);
-        };
-        main();
-    </script>
     <script type="text/javascript">
         twemoji.parse(
             document.body,

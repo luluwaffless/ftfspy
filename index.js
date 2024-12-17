@@ -67,6 +67,12 @@ async function combineImages(imageUrls) {
     }))).png().toBuffer();
     return combinedImageBuffer;
 };
+app.get("/logs", (_, res) => {
+    res.sendFile("logs.txt");
+});
+app.get("/last", (_, res) => {
+    res.sendFile("last.json");
+});
 app.get("/version", (_, res) => {
     res.json({version: version, updateNeeded: updateNeeded});
 });
@@ -353,7 +359,7 @@ client.on('ready', async function () {
         status: 'online'
     });
     if (config.checkBotUpdates) startUp(checkBotUpdates, 300);
-    if (config.advertise) startUp(advertise, 86400);
+    if (config.advertise) startUp(advertise, 43200);
     startUp(checkTesters, 120);
     startUp(checkUpdates, 60);
     startUp(checkTopics, 60);
