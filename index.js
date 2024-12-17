@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import express from "express";
 import sharp from "sharp";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 dotenv.config();
 const app = express();
@@ -68,6 +69,7 @@ async function combineImages(imageUrls) {
     }))).png().toBuffer();
     return combinedImageBuffer;
 };
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.get("/logs", (_, res) => {
     res.sendFile(path.join(__dirname, "./logs.txt"));
 });
