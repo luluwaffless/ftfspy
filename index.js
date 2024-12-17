@@ -4,6 +4,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
 import sharp from "sharp";
+import path from "node:path";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 dotenv.config();
 const app = express();
@@ -68,10 +69,10 @@ async function combineImages(imageUrls) {
     return combinedImageBuffer;
 };
 app.get("/logs", (_, res) => {
-    res.sendFile("logs.txt");
+    res.sendFile(path.join([__dirname, "logs.txt"]));
 });
 app.get("/last", (_, res) => {
-    res.sendFile("last.json");
+    res.sendFile(path.join([__dirname, "last.json"]));
 });
 app.get("/version", (_, res) => {
     res.json({version: version, updateNeeded: updateNeeded});
@@ -168,7 +169,7 @@ async function checkUpdates(individual) {
                 if (response.data.data[0].updated != last.updated.main && (new Date(response.data.data[0].updated).getTime() > new Date(last.updated.main).getTime() + 1000)) {
                     log(`✅ ${config.mainGame.name.toUpperCase()} updated. From ${last.updated.main} to ${response.data.data[0].updated}.`);
                     last.updated.main = response.data.data[0].updated;
-                    fs.writeFileSync("public/last.json", JSON.stringify(last));
+                    fs.writeFileSync("last.json", JSON.stringify(last));
                     sessionInfo.mainupd += 1;
                     axios.get(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${config.mainGame.universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`, { "headers": { "accept": "application/json" } })
                         .then(image => {
@@ -200,7 +201,7 @@ async function checkUpdates(individual) {
                 if (response.data.data[0].updated != last.updated.test && (new Date(response.data.data[0].updated).getTime() > new Date(last.updated.test).getTime() + 1000)) {
                     log(`✅ ${config.testGame.name.toUpperCase()} updated. From ${last.updated.test} to ${response.data.data[0].updated}.`);
                     last.updated.test = response.data.data[0].updated;
-                    fs.writeFileSync("public/last.json", JSON.stringify(last));
+                    fs.writeFileSync("last.json", JSON.stringify(last));
                     sessionInfo.testupd += 1;
                     send(gameChannel, `# \`🚨\` [${config.testGame.displayName.toUpperCase()}](<https://www.roblox.com/games/${config.testGame.placeId}>) ATUALIZOU\n-# há ${timeSince(response.data.data[0].updated)}\n-# ||<@&${config.discord.pings.testUpdPing}>||`);
                 };
@@ -225,7 +226,7 @@ async function checkTopics(individual) {
                     if (!last.topics.includes(topic.id)) {
                         last.topics.push(topic.id);
                         log(`📰 New topic by ${config.leadDev.username}. https://devforum.roblox.com/t/${topic.slug}/${topic.id}`);
-                        fs.writeFileSync("public/last.json", JSON.stringify(last));
+                        fs.writeFileSync("last.json", JSON.stringify(last));
                         sessionInfo.newTopics += 1;
                         send(devChannel, `\`📰\` novo tópico no devforum pel${config.leadDev.preDisplay} ${config.leadDev.username}: https://devforum.roblox.com/t/${topic.slug}/${topic.id}\n-# há ${timeSince(topic.created_at)}\n-# ||<@&${config.discord.pings.topicsPing}>||`);
                     };
