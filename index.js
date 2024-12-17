@@ -320,6 +320,7 @@ async function advertise() {
     const advertiseChannel = await client.channels.fetch(config.discord.channels.advertiseId);
     await advertiseChannel.bulkDelete(await advertiseChannel.messages.fetch({ limit: 100 }));
     await advertiseChannel.send({content: advertisement})
+        .then(async msg => await msg.react("🩷"));
 };
 
 async function checkBotUpdates() {
