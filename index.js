@@ -89,6 +89,10 @@ app.get("/check", async function (req, res) {
     };
     res.json(sessionInfo);
 });
+app.get("/advertise", (_, res) => {
+    advertise();
+    res.sendStatus(200);
+});
 
 const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
 const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
