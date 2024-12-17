@@ -10,10 +10,10 @@ const app = express();
 app.use(express.static("public"));
 const version = fs.readFileSync("version", "utf8");
 let updateNeeded = false;
-let last = JSON.parse(fs.readFileSync("public/last.json", "utf8"));
+let last = JSON.parse(fs.readFileSync("last.json", "utf8"));
 let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0 }, testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, ce: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "" } };
 async function log(data) {
-    return fs.appendFileSync("public/logs.txt", `[${new Date().toISOString()}] ${data}\n`);
+    return fs.appendFileSync("logs.txt", `[${new Date().toISOString()}] ${data}\n`);
 };
 let gameChannel;
 let devChannel;
