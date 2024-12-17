@@ -69,10 +69,10 @@ async function combineImages(imageUrls) {
     return combinedImageBuffer;
 };
 app.get("/logs", (_, res) => {
-    res.sendFile(path.join([__dirname, "logs.txt"]));
+    res.sendFile("./logs.txt");
 });
 app.get("/last", (_, res) => {
-    res.sendFile(path.join([__dirname, "last.json"]));
+    res.sendFile("./last.json");
 });
 app.get("/version", (_, res) => {
     res.json({version: version, updateNeeded: updateNeeded});
