@@ -323,12 +323,10 @@ async function updateStatus(goingOffline) {
     };
     updating = false;
 };
-
-const advertisement = fs.readFileSync("advertisement.txt", "utf8");
 async function advertise() {
     const advertiseChannel = await client.channels.fetch(config.discord.channels.advertiseId);
     await advertiseChannel.bulkDelete(await advertiseChannel.messages.fetch({ limit: 100 }));
-    await advertiseChannel.send({content: advertisement})
+    await advertiseChannel.send({content: config.advertisement})
         .then(async msg => await msg.react("🩷"));
 };
 
