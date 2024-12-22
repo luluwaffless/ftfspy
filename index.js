@@ -9,9 +9,6 @@ import { fileURLToPath } from "node:url";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 (async () => {
     const { default: locale } = await import(`./locale/${config.locale}.js`);
-    console.log(locale);
-    console.log(locale.probability);
-    console.log(locale.probability?.[5]);
     dotenv.config();
     const app = express();
     app.use(express.static("public"));
