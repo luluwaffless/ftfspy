@@ -1,5 +1,6 @@
 export default {
     port: 3000,
+    locale: "pt-br",
     checkBotUpdates: true,
     advertise: true,
     mainGame: {
