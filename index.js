@@ -490,4 +490,4 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
         });
     });
     client.login(process.env.token);
-});
+})();
