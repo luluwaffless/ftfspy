@@ -1,5 +1,4 @@
 import config from "./config.js";
-import locale from `./locale/${config.locale}.js`
 import fs from "node:fs";
 import axios from "axios";
 import dotenv from "dotenv";
@@ -8,6 +7,7 @@ import sharp from "sharp";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+const locale = import(`./locale/${config.locale}.js`);
 dotenv.config();
 const app = express();
 app.use(express.static("public"));
