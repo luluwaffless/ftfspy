@@ -8,7 +8,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 (async () => {
-    const locale = await import(`./locale/${config.locale}.js`);
+    const { default: locale } = await import(`./locale/${config.locale}.js`);
+    console.log(locale);
+    console.log(locale.probability);
+    console.log(locale.probability?.[5]);
     dotenv.config();
     const app = express();
     app.use(express.static("public"));
@@ -380,6 +383,9 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
         if (updating) return;
         updating = true;
         const embedFields = locale.embedFields(
+            config.leadDev.preDisplay,
+            config.leadDev.displayName,
+            sessionInfo.tsit.length,
             config.testGame.name, 
             Math.floor(new Date(last.updated.test).getTime() / 1000), 
             config.mainGame.name, 
@@ -397,6 +403,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                 : null,
             sessionInfo.probability,
             {
+                probability: Math.floor(new Date(sessionInfo.nextChecks.probability).getTime() / 1000),
                 testers: Math.floor(new Date(sessionInfo.nextChecks.testers).getTime() / 1000),
                 updates: Math.floor(new Date(sessionInfo.nextChecks.updates).getTime() / 1000),
                 topics: Math.floor(new Date(sessionInfo.nextChecks.topics).getTime() / 1000),
