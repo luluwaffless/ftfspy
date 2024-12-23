@@ -33,10 +33,10 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
         let parts = [];
-        if (hours && hours > 0) parts.push(`${hours} hora${hours != 1 ? "s" : ""}`);
-        if (minutes && minutes > 0) parts.push(`${minutes} minuto${minutes != 1 ? "s" : ""}`);
-        if (seconds && seconds > 0) parts.push(`${seconds} segundo${seconds != 1 ? "s" : ""}`);
-        return parts.length > 0 ? parts.join(", ") : "agora";
+        if (hours && hours > 0) parts.push(`${hours} ${locale.hours(hours)}`);
+        if (minutes && minutes > 0) parts.push(`${minutes} ${locale.minutes(minutes)}`);
+        if (seconds && seconds > 0) parts.push(`${seconds} ${locale.seconds(seconds)}`);
+        return parts.length > 0 ? parts.join(", ") : locale.now;
     };
     async function downloadImageAsBuffer(url) {
         const response = await axios({
@@ -106,7 +106,6 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
     });
 
     const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
-    const statusText = ['offline', 'online', 'jogando', 'no studio', 'invisível'];
     async function checkProbability(individual) {
         await axios.get(process.env.probabilityapi)
             .then(response => {
@@ -207,7 +206,6 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                                         response.data.data[0].description, 
                                         image.data.data[0].imageUrl, 
                                         timeSince(response.data.data[0].updated), 
-                                        sessionInfo.probability,
                                         config.discord.pings.mainUpdPing
                                     ));
                                 } else {
@@ -218,7 +216,6 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                                         config.mainGame.placeId, 
                                         response.data.data[0].description, 
                                         timeSince(response.data.data[0].updated), 
-                                        sessionInfo.probability,
                                         config.discord.pings.mainUpdPing
                                     ));
                                 }
@@ -332,8 +329,8 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                                     response.data.userPresences[0].placeId, 
                                     sessionInfo.lastStatus, 
                                     sessionInfo.lastStatus == 2 
-                                        ? `jogando ${sessionInfo.lastLocation}` 
-                                        : statusText[sessionInfo.lastStatus], 
+                                        ? `${locale.playing} ${sessionInfo.lastLocation}` 
+                                        : locale.statusText[sessionInfo.lastStatus], 
                                     timeSince(sessionInfo.lastStatusBegin),
                                     sessionInfo.probability,
                                     config.discord.pings.statusPing
@@ -342,14 +339,14 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                             });
                         } else send(devChannel, locale.changedstatus(
                             statusEmoji[sessionInfo.status], 
-                            statusText[sessionInfo.status], 
+                            locale.statusText[sessionInfo.status], 
                             config.leadDev.preDisplay, 
                             config.leadDev.displayName, 
                             config.leadDev.userId, 
                             sessionInfo.lastStatus, 
                             sessionInfo.lastStatus == 2 
-                                ? `jogando ${sessionInfo.lastLocation}` 
-                                : statusText[sessionInfo.lastStatus], 
+                                ? `${locale.playing} ${sessionInfo.lastLocation}` 
+                                : locale.statusText[sessionInfo.lastStatus], 
                             timeSince(sessionInfo.lastStatusBegin), 
                             response.data.userPresences[0].userPresenceType, 
                             sessionInfo.probability,
@@ -380,6 +377,8 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
         if (updating) return;
         updating = true;
         const embedFields = locale.embedFields(
+            config.discord.serverId,
+            config.discord.channels.gameUpdatesId,
             config.leadDev.preDisplay,
             config.leadDev.displayName,
             sessionInfo.tsit.length,
@@ -388,7 +387,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
             config.mainGame.name, 
             Math.floor(new Date(last.updated.main).getTime() / 1000), 
             statusEmoji[sessionInfo.status], 
-            statusText[sessionInfo.status], 
+            locale.statusText[sessionInfo.status], 
             sessionInfo.lastStatus >= 0 
                 ? Math.floor(new Date(sessionInfo.lastStatusBegin).getTime() / 1000) 
                 : null, 
@@ -396,7 +395,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                 ? statusEmoji[sessionInfo.lastStatus] 
                 : null, 
             sessionInfo.lastStatus >= 0 
-                ? statusText[sessionInfo.lastStatus] 
+                ? locale.statusText[sessionInfo.lastStatus] 
                 : null,
             sessionInfo.probability,
             {
@@ -440,7 +439,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
             .then(function(response) {
                 if (response.data.trim() != version.trim()) {
                     updateNeeded = true;
-                    console.log(`⚠️ New version v${response.data.trim()}! Please update by using "git pull".`); // if this doesn't work istg im gonna freak out
+                    console.log(`⚠️ New version v${response.data.trim()}! Please update by using "git pull".`);
                 };
             })
             .catch(function (error) {

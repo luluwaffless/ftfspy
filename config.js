@@ -1,6 +1,6 @@
 export default {
     port: 3000,
-    locale: "pt-br",
+    locale: "pt-br", 
     checkBotUpdates: true,
     advertise: true,
     mainGame: {
@@ -26,6 +26,7 @@ export default {
         name: "ftfspy",
         displayName: "ftf spy :3",
         description: "por luluwaffless",
+        serverId: "1247404953073483877",
         channels: {
             advertiseId: "1316488085025980587",
             vcStatusId: "1283187128469295176",
