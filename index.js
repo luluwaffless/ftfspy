@@ -109,7 +109,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
     async function checkProbability(individual) {
         await axios.get(process.env.probabilityapi)
             .then(response => {
-                if (response.data["chance"] && !isNaN(response.data.chance)) {
+                if (response.data["chance"] && locale.probability[response.data.chance]) {
                     sessionInfo.probability = locale.probability[response.data.chance];
                 } else {
                     sessionInfo.probability = locale.probability[5];
