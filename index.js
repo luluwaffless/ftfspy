@@ -343,6 +343,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                             config.leadDev.preDisplay, 
                             config.leadDev.displayName, 
                             config.leadDev.userId, 
+                            sessionInfo.lastLocation,
                             sessionInfo.lastStatus, 
                             sessionInfo.lastStatus == 2 
                                 ? `${locale.playing} ${sessionInfo.lastLocation}` 
