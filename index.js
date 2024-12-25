@@ -307,6 +307,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                         ));
                     };
                     last.onlineindevforum = response.data.user.last_seen_at;
+                    fs.writeFileSync("last.json", JSON.stringify(last));
                 } else {
                     sessionInfo.erd += 1;
                     log("❌ Line 312: Error reading data: " + JSON.stringify(response.data));
