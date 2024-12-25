@@ -295,7 +295,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                 log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
             });
         await axios.get(`https://devforum.roblox.com/u/${config.leadDev.username.toLowerCase()}.json`)
-            .then(function (response) {
+            .then(async function (response) {
                 if (response.data["user"] && response.data.user["last_seen_at"]) {
                     if (response.data.user.last_seen_at != last.onlineindevforum && (new Date(response.data.user.last_seen_at).getTime() > new Date(last.onlineindevforum).getTime() + 600000)) {
                         send(devChannel, locale.onlineindevforum(
