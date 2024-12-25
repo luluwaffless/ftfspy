@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 (async () => {
     const { default: locale } = await import(`./locale/${config.locale}.js`);
+    const { default: altlocale } = await import(`./locale/${config.altlocale}.js`); // will be used in future update ;)
     dotenv.config();
     const app = express();
     app.use(express.static("public"));
@@ -293,6 +294,28 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                 sessionInfo.efd += 1;
                 log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
             });
+        await axios.get(`https://devforum.roblox.com/u/${config.leadDev.username.toLowerCase()}.json`)
+            .then(function (response) {
+                if (response.data["user"] && response.data.user["last_seen_at"]) {
+                    if (response.data.user.last_seen_at != last.onlineindevforum && (new Date(response.data.user.last_seen_at).getTime() > new Date(last.onlineindevforum).getTime() + 600000)) {
+                        send(devChannel, locale.onlineindevforum(
+                            config.leadDev.preDisplay, 
+                            config.leadDev.displayName,
+                            config.leadDev.username,
+                            sessionInfo.probability,
+                            config.discord.pings.topicsPing
+                        ));
+                    };
+                    last.onlineindevforum = response.data.user.last_seen_at;
+                } else {
+                    sessionInfo.erd += 1;
+                    log("❌ Line 312: Error reading data: " + JSON.stringify(response.data));
+                }
+            })
+            .catch(function (error) {
+                sessionInfo.efd += 1;
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+            });
         sessionInfo.checks.topics += 1;
         if (!individual) sessionInfo.nextChecks.topics = new Date(new Date().getTime() + 60000).toISOString();
         await updateStatus();
@@ -315,7 +338,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                         sessionInfo.gameId = response.data.userPresences[0].gameId;
                         if (response.data.userPresences[0].userPresenceType === 2 && response.data.userPresences[0].placeId && response.data.userPresences[0].gameId) {
                             const button = new ButtonBuilder()
-                                .setLabel('entrar')
+                                .setLabel(locale.join)
                                 .setURL(`https://deepblox.onrender.com/experiences/start?placeId=${response.data.userPresences[0].placeId}&gameInstanceId=${response.data.userPresences[0].gameId}`)
                                 .setStyle(ButtonStyle.Link);
                             const row = new ActionRowBuilder()

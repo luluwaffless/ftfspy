@@ -1,5 +1,7 @@
 export default {
+    emoji: "🇺🇸🇬🇧",
     playing: "playing",
+    join: "join",
     now: "now",
     probability: ["`🔴` very low", "`🟠` low", "`🟡` average", "`🟢` high", "`🔵` very high", "`❔` unknown"],
     statusText: ['offline', 'online', 'playing', 'in studio', 'invisible'],
@@ -12,6 +14,7 @@ export default {
     mainupd: (displayName, placeId, description, updatedTime, mainUpdPing) => `# \`🚨\` [${displayName.toUpperCase()}](https://www.roblox.com/games/${placeId}) UPDATED\n\`\`\`\n${description}\n\`\`\`\n-# ${updatedTime}${updatedTime != "now" ? " ago" : ""}\n-# ||<@&${mainUpdPing}>||`,
     testupd: (displayName, placeId, updatedTime, probability, testUpdPing) => `# \`🚨\` [${displayName.toUpperCase()}](<https://www.roblox.com/games/${placeId}>) UPDATED\n-# ${updatedTime}${updatedTime != "now" ? " ago" : ""}\n-# current update probability: ${probability}\n-# ||<@&${testUpdPing}>||`,
     newtopic: (preDisplay, username, topicSlug, topicId, createdAt, probability, topicsPing) => `\`📰\` new topic in devforum by ${preDisplay} ${username}: https://devforum.roblox.com/t/${topicSlug}/${topicId}\n-# ${createdAt}${createdAt != "now" ? " ago" : ""}\n-# current update probability: ${probability}\n-# ||<@&${topicsPing}>||`,
+    onlinedevforum: (preDisplay, displayName, username, probability, topicsPing) => `\`⚪\` ${preDisplay} [${displayName}](<https://devforum.roblox.com/u/${username}/summary>) is online **in devforum**\n-# current update probability: ${probability}\n-# ||<@&${topicsPing}>||`,
     joinedgame: (preDisplay, displayName, userId, lastLocation, placeId, lastStatus, lastStatusText, lastStatusBegin, probability, statusPing) => `\`🟢\` ${preDisplay} [${displayName}](<https://www.roblox.com/users/${userId}>) is playing [${lastLocation}](https://www.roblox.com/games/${placeId})${lastStatus > 0 ? `\n-# was ${lastStatus == 2 && lastLocation ? `jogando ${lastLocation}` : lastStatusText} for ${lastStatusBegin}` : ""}\n-# current update probability: ${probability}\n-# ||<@&${statusPing}>||`,
     changedstatus: (statusEmoji, status, preDisplay, displayName, userId, lastLocation, lastStatus, lastStatusText, lastStatusBegin, presenceType, probability, studioPing, statusPing) => `\`${statusEmoji}\` ${preDisplay} [${displayName}](<https://www.roblox.com/users/${userId}>) is ${status}${lastStatus > 0 ? `\n-# was ${lastStatus == 2 && lastLocation ? `playing ${lastLocation}` : lastStatusText} for ${lastStatusBegin}` : ""}\n-# current update probability: ${probability}\n-# ||<@&${presenceType == 3 ? studioPing : statusPing}>||`,
     embedFields: (serverId, gameUpdatesId, preDisplay, displayName, tsit, testGameName, testLastUpdate, mainGameName, mainLastUpdate, statusEmoji, currentStatusText, currentStatusTime, lastStatusEmoji, lastStatusText, probability, nextChecks) => [

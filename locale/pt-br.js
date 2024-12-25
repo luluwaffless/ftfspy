@@ -1,5 +1,7 @@
 export default {
+    emoji: "🇧🇷🇵🇹",
     playing: "jogando",
+    join: "entrar",
     now: "agora",
     probability: ["`🔴` muito baixa", "`🟠` baixa", "`🟡` mediana", "`🟢` alta", "`🔵` muito alta", "`❔` desconhecido"],
     statusText: ['offline', 'online', 'jogando', 'no studio', 'invisível'],
@@ -12,6 +14,7 @@ export default {
     mainupd: (displayName, placeId, description, updatedTime, mainUpdPing) => `# \`🚨\` [${displayName.toUpperCase()}](https://www.roblox.com/games/${placeId}) ATUALIZOU\n\`\`\`\n${description}\n\`\`\`\n-# ${updatedTime != "agora" ? "há " : ""}${updatedTime}\n-# ||<@&${mainUpdPing}>||`,
     testupd: (displayName, placeId, updatedTime, probability, testUpdPing) => `# \`🚨\` [${displayName.toUpperCase()}](<https://www.roblox.com/games/${placeId}>) ATUALIZOU\n-# ${updatedTime != "agora" ? "há " : ""}${updatedTime}\n-# probabilidade de atualizar atual: ${probability}\n-# ||<@&${testUpdPing}>||`,
     newtopic: (preDisplay, username, topicSlug, topicId, createdAt, probability, topicsPing) => `\`📰\` novo tópico no devforum pel${preDisplay} ${username}: https://devforum.roblox.com/t/${topicSlug}/${topicId}\n-# ${createdAt != "agora" ? "há " : ""}${createdAt}\n-# probabilidade de atualizar atual: ${probability}\n-# ||<@&${topicsPing}>||`,
+    onlinedevforum: (preDisplay, displayName, username, probability, topicsPing) => `\`⚪\` ${preDisplay} [${displayName}](<https://devforum.roblox.com/u/${username}/summary>) está online **no devforum**\n-# probabilidade de atualizar atual: ${probability}\n-# ||<@&${topicsPing}>||`,
     joinedgame: (preDisplay, displayName, userId, lastLocation, placeId, lastStatus, lastStatusText, lastStatusBegin, probability, statusPing) => `\`🟢\` ${preDisplay} [${displayName}](<https://www.roblox.com/users/${userId}>) está jogando [${lastLocation}](https://www.roblox.com/games/${placeId})${lastStatus > 0 ? `\n-# ficou ${lastStatus == 2 && lastLocation ? `jogando ${lastLocation}` : lastStatusText} por ${lastStatusBegin}` : ""}\n-# probabilidade de atualizar atual: ${probability}\n-# ||<@&${statusPing}>||`,
     changedstatus: (statusEmoji, status, preDisplay, displayName, userId, lastLocation, lastStatus, lastStatusText, lastStatusBegin, presenceType, probability, studioPing, statusPing) => `\`${statusEmoji}\` ${preDisplay} [${displayName}](<https://www.roblox.com/users/${userId}>) está ${status}${lastStatus > 0 ? `\n-# ficou ${lastStatus == 2  && lastLocation ? `jogando ${lastLocation}` : lastStatusText} por ${lastStatusBegin}` : ""}\n-# probabilidade de atualizar atual: ${probability}\n-# ||<@&${presenceType == 3 ? studioPing : statusPing}>||`,
     embedFields: (serverId, gameUpdatesId, preDisplay, displayName, tsit, testGameName, testLastUpdate, mainGameName, mainLastUpdate, statusEmoji, currentStatusText, currentStatusTime, lastStatusEmoji, lastStatusText, probability, nextChecks) => [
