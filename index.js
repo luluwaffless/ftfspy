@@ -26,7 +26,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
     let devChannel;
     const send = async (c, m) => await c.send(m).then((msg) => { msg.crosspost(); }).catch((err) => {
         sessionInfo.esm += 1;
-        log(`❌ Error sending message: ${err.message}, ${err.stack || 'no stack trace available'}`);
+        log(`❌ Error sending message: ${err.message}, ${err.stack || 'no stack trace available'}`, true);
     });
     function timeSince(isostr) {
         const timestamp = new Date(isostr).getTime();
@@ -187,12 +187,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                                         ), files: [image]});
                                     } else {
                                         sessionInfo.erd += 1;
-                                        log("❌ Line 130: Error reading data: " + JSON.stringify(batches.data));
+                                        log("❌ Line 130: Error reading data: " + JSON.stringify(batches.data), true);
                                     };
                                 })
                                 .catch(error => {
                                     sessionInfo.efd += 1;
-                                    log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                                    log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
                                 });
                         };
                     } else if (sessionInfo.tsit.length > 0) {
@@ -206,12 +206,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                     };
                 } else {
                     sessionInfo.erd += 1;
-                    log("❌ Line 151: Error reading data: " + JSON.stringify(instances.data));
+                    log("❌ Line 151: Error reading data: " + JSON.stringify(instances.data), true);
                 };
             })
             .catch(error => {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
         sessionInfo.checks.testers += 1;
         if (!individual) sessionInfo.nextChecks.testers = new Date(new Date().getTime() + 120000).toISOString();
@@ -241,7 +241,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                                     ));
                                 } else {
                                     sessionInfo.erd += 1;
-                                    log("❌ Line 183: Error reading data: " + JSON.stringify(image.data));
+                                    log("❌ Line 183: Error reading data: " + JSON.stringify(image.data), true);
                                     send(gameChannel, locale.mainupd(
                                         config.mainGame.displayName, 
                                         config.mainGame.placeId, 
@@ -253,17 +253,17 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                             })
                             .catch(error => {
                                 sessionInfo.efd += 1;
-                                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`)
+                                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true)
                             });
                     };
                 } else {
                     sessionInfo.erd += 1;
-                    log("❌ Line 194: Error reading data: " + JSON.stringify(response.data));
+                    log("❌ Line 194: Error reading data: " + JSON.stringify(response.data), true);
                 };
             })
             .catch(error => {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`)
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true)
             });
         await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.testGame.universeId}`, { "headers": { "accept": "application/json" } })
             .then(async response => {
@@ -285,12 +285,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                     };
                 } else {
                     sessionInfo.erd += 1;
-                    log("❌ Line 161: Error reading data: " + JSON.stringify(response.data));
+                    log("❌ Line 161: Error reading data: " + JSON.stringify(response.data), true);
                 };
             })
             .catch(error => {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
         sessionInfo.checks.updates += 1;
         if (!individual) sessionInfo.nextChecks.updates = new Date(new Date().getTime() + 60000).toISOString();
@@ -319,12 +319,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                     });
                 } else {
                     sessionInfo.erd += 1;
-                    log("❌ Line 231: Error reading data: " + JSON.stringify(response.data));
+                    log("❌ Line 231: Error reading data: " + JSON.stringify(response.data), true);
                 }
             })
             .catch(function (error) {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
         await axios.get(`https://devforum.roblox.com/u/${config.leadDev.username.toLowerCase()}.json`)
             .then(async function (response) {
@@ -342,12 +342,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                     saveLast();
                 } else {
                     sessionInfo.erd += 1;
-                    log("❌ Line 312: Error reading data: " + JSON.stringify(response.data));
+                    log("❌ Line 312: Error reading data: " + JSON.stringify(response.data), true);
                 }
             })
             .catch(function (error) {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
         sessionInfo.checks.topics += 1;
         if (!individual) sessionInfo.nextChecks.topics = new Date(new Date().getTime() + 60000).toISOString();
@@ -416,12 +416,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                     };
                 } else {
                     sessionInfo.erd += 1;
-                    log("❌ Line 214: Error reading data: " + JSON.stringify(response.data));
+                    log("❌ Line 214: Error reading data: " + JSON.stringify(response.data), true);
                 };
             })
             .catch(function (error) {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
         sessionInfo.checks.status += 1;
         if (!individual) sessionInfo.nextChecks.status = new Date(new Date().getTime() + 30000).toISOString();
@@ -502,7 +502,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
             })
             .catch(function (error) {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`);
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
     };
 
@@ -542,12 +542,12 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
         };
         process.on('unhandledRejection', (reason, promise) => {
             sessionInfo.ce += 1;
-            log(`❌ Unhandled Rejection at ${promise}: ${reason} (${reason.message || 'no message'}, ${reason.stack || 'no stack'})`);
+            log(`❌ Unhandled Rejection at ${promise}: ${reason} (${reason.message || 'no message'}, ${reason.stack || 'no stack'})`, true);
         });
         
         process.on('uncaughtException', (err) => {
             sessionInfo.ce += 1;
-            log(`❌ Uncaught Exception: ${err.message}, ${err.stack}`);
+            log(`❌ Uncaught Exception: ${err.message}, ${err.stack}`, true);
         });
     });
     client.login(process.env.token);
