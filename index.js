@@ -253,7 +253,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                             })
                             .catch(error => {
                                 sessionInfo.efd += 1;
-                                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true)
+                                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
                             });
                     };
                 } else {
@@ -263,7 +263,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
             })
             .catch(error => {
                 sessionInfo.efd += 1;
-                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true)
+                log(`❌ Error fetching data: ${error.message}, ${error.stack || 'no stack trace available'}`, true);
             });
         await axios.get(`https://games.roblox.com/v1/games?universeIds=${config.testGame.universeId}`, { "headers": { "accept": "application/json" } })
             .then(async response => {
