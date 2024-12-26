@@ -3,7 +3,7 @@ export default {
     playing: "playing",
     join: "join",
     now: "now",
-    probability: ["`🔴` very low", "`🟠` low", "`🟡` average", "`🟢` high", "`🔵` very high", "`❔` unknown"],
+    probability: ["`⚫` impossible", "`🔴` very low", "`🟠` low", "`🟡` average", "`🟢` high", "`🔵` very high", , "`🟣` extremely high"],
     statusText: ['offline', 'online', 'playing', 'in studio', 'invisible'],
     hours: (hours) => `hour${hours != 1 ? "s" : ""}`,
     minutes: (minutes) => `minute${minutes != 1 ? "s" : ""}`,
