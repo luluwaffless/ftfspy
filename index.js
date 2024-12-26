@@ -9,16 +9,18 @@ import { fileURLToPath } from "node:url";
 import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 (async () => {
     const { default: locale } = await import(`./locale/${config.locale}.js`);
-    const { default: altlocale } = await import(`./locale/${config.altlocale}.js`); // will be used in future update ;)
     dotenv.config();
     const app = express();
     app.use(express.static("public"));
     const version = fs.readFileSync("version", "utf8");
     let updateNeeded = false;
     let last = JSON.parse(fs.readFileSync("last.json", "utf8"));
+    const saveLast = fs.writeFileSync("last.json", JSON.stringify(last));
+    let probability = JSON.parse(fs.readFileSync("probability.json", "utf8"));
+    const saveProbability = fs.writeFileSync("probability.json", JSON.stringify(last));
     let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0, probability: 0 }, probability: locale.probability[5], testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, ce: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "", probability: "" } };
-    async function log(data) {
-        return fs.appendFileSync("logs.txt", `[${new Date().toISOString()}] ${data}\n`);
+    async function log(data, error) {
+        return fs.appendFileSync(`${error ? "errors" : "logs"}.txt`, `[${new Date().toISOString()}] ${data}\n`);
     };
     let gameChannel;
     let devChannel;
@@ -108,14 +110,40 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
 
     const statusEmoji = ['⚫', '🔵', '🟢', '🟠', '❔'];
     async function checkProbability(individual) {
-        await axios.get(process.env.probabilityapi)
-            .then(response => {
-                if (!isNaN(response.data["chance"]) && locale.probability[response.data.chance]) {
-                    sessionInfo.probability = locale.probability[response.data.chance];
-                } else {
-                    sessionInfo.probability = locale.probability[5];
+        const now = new Date();
+        const hour = now.getUTCHours();
+        const minute = now.getUTCMinutes();
+        if (hour !== 0 || minute !== 0) {
+            let estimate = 0;
+            if (hour > 23 || hour < 11) estimate += 10;
+            Object.keys(probability).forEach((category) => {
+                const { yesterday, today } = probability[category];
+                const total = yesterday + today;
+                if (category === "main" && total > 0) {
+                    estimate /= 2;
+                } else if (total >= 5) {
+                    estimate += 40;
+                } else if (total === 4) {
+                    estimate += 30;
+                } else if (total === 3) {
+                    estimate += 20;
                 };
             });
+            estimate = estimate > 100 ? 6
+                : estimate >= 80 ? 5
+                : estimate >= 60 ? 4
+                : estimate >= 40 ? 3
+                : estimate >= 20 ? 2
+                : estimate > 0 ? 1
+                : 0;
+            sessionInfo.probability = locale.probability[estimate];
+        } else if (now.getUTCSeconds() > 30) {
+            Object.keys(probability).forEach((key) => {
+                probability[key].yesterday = probability[key].today;
+                probability[key].today = 0;
+            });
+            saveProbability();
+        };
         sessionInfo.checks.probability += 1;
         if (!individual) sessionInfo.nextChecks.probability = new Date(new Date().getTime() + 60000).toISOString();
         await updateStatus();
@@ -195,9 +223,11 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                 if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
                     if (response.data.data[0].updated != last.updated.main && (new Date(response.data.data[0].updated).getTime() > new Date(last.updated.main).getTime() + 1000)) {
                         log(`✅ ${config.mainGame.name.toUpperCase()} updated. From ${last.updated.main} to ${response.data.data[0].updated}.`);
+                        probability.main.today++;
+                        saveProbability();
                         last.updated.main = response.data.data[0].updated;
-                        fs.writeFileSync("last.json", JSON.stringify(last));
-                        sessionInfo.mainupd += 1;
+                        saveLast();
+                        sessionInfo.mainupd++;
                         axios.get(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${config.mainGame.universeId}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`, { "headers": { "accept": "application/json" } })
                             .then(image => {
                                 if (image.data["data"] && image.data.data[0] && image.data.data[0]["imageUrl"]) {
@@ -240,8 +270,10 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                 if (response.data["data"] && response.data.data[0] && response.data.data[0]["updated"]) {
                     if (response.data.data[0].updated != last.updated.test && (new Date(response.data.data[0].updated).getTime() > new Date(last.updated.test).getTime() + 1000)) {
                         log(`✅ ${config.testGame.name.toUpperCase()} updated. From ${last.updated.test} to ${response.data.data[0].updated}.`);
+                        probability.test.today++;
+                        saveProbability();
                         last.updated.test = response.data.data[0].updated;
-                        fs.writeFileSync("last.json", JSON.stringify(last));
+                        saveLast();
                         sessionInfo.testupd += 1;
                         send(gameChannel, locale.testupd(
                             config.testGame.displayName, 
@@ -272,7 +304,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                         if (!last.topics.includes(topic.id)) {
                             last.topics.push(topic.id);
                             log(`📰 New topic by ${config.leadDev.username}. https://devforum.roblox.com/t/${topic.slug}/${topic.id}`);
-                            fs.writeFileSync("last.json", JSON.stringify(last));
+                            saveLast();
                             sessionInfo.newTopics += 1;
                             send(devChannel, locale.newtopic(
                                 config.leadDev.preDisplay, 
@@ -307,7 +339,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                         ));
                     };
                     last.onlineindevforum = response.data.user.last_seen_at;
-                    fs.writeFileSync("last.json", JSON.stringify(last));
+                    saveLast();
                 } else {
                     sessionInfo.erd += 1;
                     log("❌ Line 312: Error reading data: " + JSON.stringify(response.data));
@@ -337,6 +369,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                         sessionInfo.status = response.data.userPresences[0].userPresenceType;
                         sessionInfo.placeId = response.data.userPresences[0].placeId;
                         sessionInfo.gameId = response.data.userPresences[0].gameId;
+                        if (sessionInfo.status === 3) { probability.studio.today++; saveProbability(); };
                         if (response.data.userPresences[0].userPresenceType === 2 && response.data.userPresences[0].placeId && response.data.userPresences[0].gameId) {
                             const button = new ButtonBuilder()
                                 .setLabel(locale.join)
@@ -373,7 +406,7 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
                                 ? `${locale.playing} ${sessionInfo.lastLocation}` 
                                 : locale.statusText[sessionInfo.lastStatus], 
                             timeSince(sessionInfo.lastStatusBegin), 
-                            response.data.userPresences[0].userPresenceType, 
+                            sessionInfo.status, 
                             sessionInfo.probability,
                             config.discord.pings.studioPing, 
                             config.discord.pings.statusPing
