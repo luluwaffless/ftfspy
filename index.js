@@ -1,5 +1,5 @@
 import config from "./config.js";
-import fs from "node:fs";
+import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
@@ -12,15 +12,15 @@ import { Client, GatewayIntentBits, ActivityType, EmbedBuilder, AttachmentBuilde
     dotenv.config();
     const app = express();
     app.use(express.static("public"));
-    const version = fs.readFileSync("version", "utf8");
+    const version = readFileSync("version", "utf8");
     let updateNeeded = false;
-    let last = JSON.parse(fs.readFileSync("last.json", "utf8"));
-    const saveLast = fs.writeFileSync("last.json", JSON.stringify(last));
-    let probability = JSON.parse(fs.readFileSync("probability.json", "utf8"));
-    const saveProbability = fs.writeFileSync("probability.json", JSON.stringify(last));
+    let last = JSON.parse(readFileSync("last.json", "utf8"));
+    const saveLast = () => writeFileSync("last.json", JSON.stringify(last));
+    let probability = JSON.parse(readFileSync("probability.json", "utf8"));
+    const saveProbability = () => writeFileSync("probability.json", JSON.stringify(probability));
     let sessionInfo = { checks: { testers: 0, updates: 0, topics: 0, status: 0, probability: 0 }, probability: locale.probability[5], testupd: 0, mainupd: 0, newTopics: 0, erd: 0, efd: 0, esm: 0, ce: 0, tsit: [], lastStatusBegin: "", lastStatus: -1, lastLocation: "", placeId: null, gameId: null, status: 0, startTime: new Date().toISOString(), nextChecks: { testers: "", updates: "", topics:"", status: "", probability: "" } };
     async function log(data, error) {
-        return fs.appendFileSync(`${error ? "errors" : "logs"}.txt`, `[${new Date().toISOString()}] ${data}\n`);
+        return appendFileSync(`${error ? "errors" : "logs"}.txt`, `[${new Date().toISOString()}] ${data}\n`);
     };
     let gameChannel;
     let devChannel;
